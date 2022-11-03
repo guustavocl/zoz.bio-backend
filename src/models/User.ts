@@ -1,0 +1,75 @@
+import mongoose from "mongoose";
+
+export interface IUser extends mongoose.Document {
+  uname: string;
+  email: string;
+  password: string;
+}
+
+const User = new mongoose.Schema(
+  {
+    uname: {
+      type: String,
+      required: [true, "Please inform your name"],
+      minLength: [1, "Name must be at least 1 characters length"],
+      maxLength: [50, "Name must be less than 50 characters length"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please inform an email"],
+      minLength: [5, "Email must be at least 5 characters length"],
+      maxLength: [50, "Email must be less than 50 characters length"],
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: [true, "Please inform your password"],
+    },
+    loginCount: { type: Number, default: 0 },
+    lastLoginIP: { type: String },
+    lastLoginDate: { type: Date },
+    lastForgetPasswordSended: { type: Date },
+    lastConfirmEmailSended: { type: Date },
+    membershipUntil: { type: Date },
+    membership: {
+      type: String,
+      enum: ["vip", "partner", "member", "org", "none"],
+      default: "none",
+    },
+    isEmailConfirmed: { type: Boolean, default: false },
+    isBanned: { type: Boolean, default: false },
+    isBlocked: { type: Boolean, default: false },
+    isMod: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (document, returnedObject) => {
+        delete returnedObject.__v;
+        delete returnedObject.password;
+      },
+    },
+  }
+);
+
+User.path("email").validate(
+  async (email: string) => {
+    let emailRegex = new RegExp("[a-zA-Z0-9]+@[a-zA-Z0-9]+.[a-zA-Z]{2,3}");
+    return emailRegex.test(email);
+  },
+  "This email is invalid",
+  "INVALID"
+);
+User.path("email").validate(
+  async (email: string) => {
+    const emailFromDb = await mongoose.models.User.countDocuments({ email });
+    return !emailFromDb;
+  },
+  "This email is already registered!",
+  "DUPLICATED"
+);
+
+export default mongoose.model<IUser>("User", User);
