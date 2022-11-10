@@ -9,6 +9,7 @@ import { reqLogger } from "./middleware/reqLogger";
 import { rules } from "./middleware/rules";
 import logger from "./utils/logger";
 import userRoutes from "./routes/user.routes";
+import { rateLimiter } from "./middleware/rateLimiter";
 
 const router = express();
 
@@ -34,6 +35,9 @@ const runServer = () => {
 
   /* RULES */
   router.use(rules());
+
+  /* RATE LIMITER */
+  router.use(rateLimiter());
 
   /*  ROUTES */
   router.use("/user", userRoutes);

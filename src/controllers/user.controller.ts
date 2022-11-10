@@ -2,23 +2,42 @@ import { NextFunction, Request, Response } from "express";
 import User, { IUser } from "../models/User";
 import logger from "../utils/logger";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import sendConfirmationMail from "../utils/mailSender";
+import Token, { IToken } from "../models/Token";
+import moment from "moment";
+
+const getUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.status(200).json({ message: "success!" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, email, password } = req.body;
-
-    const salt = bcrypt.genSaltSync(12);
-    const encryptedPassword = bcrypt.hashSync(password ? password : "", salt);
+    const { uname, email, password } = req.body;
 
     await new User({
-      uname: name,
+      uname: uname,
       email: email.toLowerCase(),
-      password: password ? encryptedPassword : null,
+      password: password,
     })
       .save()
-      .then((user: IUser) => {
+      .then(async (user: IUser) => {
         logger.info(user.toJSON(), "user created");
-        res.status(201).json({ message: "User successfully created" });
+        res.status(201).json({
+          message:
+            "Successfully registered, please confirm your email to sign in",
+        });
+
+        let confirmEmailToken = await createNewToken(user, "confirmEmail");
+        if (confirmEmailToken)
+          sendConfirmationMail(
+            user.email,
+            `http://zoz.gg/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
+          );
       })
       .catch((error: any) => {
         next(error);
@@ -28,6 +47,134 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const createNewToken = async (
+  user: IUser,
+  type: string
+): Promise<IToken | null> => {
+  let resetToken = crypto.randomBytes(32).toString("hex");
+  const hash = await bcrypt.hash(resetToken, bcrypt.genSaltSync(12));
+  try {
+    let token = await new Token({
+      hash: hash,
+      userOwner: user,
+      type: type,
+    }).save();
+    return token;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const sendConfirmEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+    let user = await User.findOne({ email: email });
+    if (user && !user.isEmailConfirmed) {
+      let confirmEmailToken: IToken | null = await Token.findOne({
+        userOwner: user,
+        type: "confirmEmail",
+      });
+      if (!confirmEmailToken) {
+        confirmEmailToken = await createNewToken(user, "confirmEmail");
+        if (confirmEmailToken)
+          sendConfirmationMail(
+            user.email,
+            `http://zoz.gg/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
+          );
+      }
+      if (
+        confirmEmailToken &&
+        moment().diff(confirmEmailToken.createdAt, "minutes") > 1
+      ) {
+        sendConfirmationMail(
+          user.email,
+          `http://zoz.gg/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
+        );
+      }
+    }
+
+    res.status(200).json({
+      message:
+        "Confirmation email succesfully sended, please check your inbox or in last case your spam folder.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const sendResetEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+  } catch (error) {
+    next(error);
+  }
+};
+
+const confirmEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, token } = req.body;
+    let user = await User.findOne({ email: email });
+    if (user && !user.isEmailConfirmed) {
+      let confirmEmailToken: IToken | null = await Token.findOne({
+        userOwner: user,
+        type: "confirmEmail",
+      });
+
+      if (confirmEmailToken && confirmEmailToken.hash === token) {
+        await confirmEmailToken.deleteOne();
+        await User.findOneAndUpdate(
+          { email: email },
+          { isEmailConfirmed: true }
+        );
+        res.status(200).json({
+          confirmated: true,
+          message: "Email succesfully confirmated",
+        });
+      } else {
+        res.status(406).json({
+          confirmated: false,
+          message: "Confirmation failed, Invalid token",
+        });
+      }
+    }
+    res.status(406).json({
+      confirmated: false,
+      message: "Confirmation failed, Invalid token",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { uname, email, password } = req.body;
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
+  getUser,
   createUser,
+  sendConfirmEmail,
+  sendResetEmail,
+  confirmEmail,
+  resetPassword,
 };

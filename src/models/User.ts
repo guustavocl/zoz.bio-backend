@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends mongoose.Document {
   uname: string;
   email: string;
   password: string;
+  isEmailConfirmed: Boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const User = new mongoose.Schema(
@@ -24,12 +28,11 @@ const User = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Please inform your password"],
+      minLength: [6, "Password must be at least 6 characters length"],
     },
     loginCount: { type: Number, default: 0 },
     lastLoginIP: { type: String },
     lastLoginDate: { type: Date },
-    lastForgetPasswordSended: { type: Date },
-    lastConfirmEmailSended: { type: Date },
     membershipUntil: { type: Date },
     membership: {
       type: String,
@@ -54,6 +57,15 @@ const User = new mongoose.Schema(
     },
   }
 );
+
+User.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+  const hash = await bcrypt.hash(this.password, bcrypt.genSaltSync(12));
+  this.password = hash;
+  next();
+});
 
 User.path("email").validate(
   async (email: string) => {

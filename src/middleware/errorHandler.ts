@@ -16,7 +16,9 @@ export const errorHandler =
             errors[key] = errors[key]["message"];
           }
         }
-        return res.status(400).json({ message: error.message, errors });
+        return res
+          .status(400)
+          .json({ message: "Fix your input values and try again", errors });
       }
 
       if (error.name === "UnauthorizedError") {
