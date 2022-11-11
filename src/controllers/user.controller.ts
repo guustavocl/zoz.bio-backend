@@ -99,7 +99,7 @@ const sendConfirmEmail = async (
 
     res.status(200).json({
       message:
-        "Confirmation email succesfully sended, please check your inbox or in last case your spam folder.",
+        "Confirmation email successfully sended, please check your inbox or in last case your spam folder.",
     });
   } catch (error) {
     next(error);
@@ -138,14 +138,9 @@ const confirmEmail = async (
           { email: email },
           { isEmailConfirmed: true }
         );
-        res.status(200).json({
+        return res.status(200).json({
           confirmated: true,
-          message: "Email succesfully confirmated",
-        });
-      } else {
-        res.status(406).json({
-          confirmated: false,
-          message: "Confirmation failed, Invalid token",
+          message: "Email successfully confirmated",
         });
       }
     }

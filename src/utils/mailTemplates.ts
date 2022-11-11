@@ -310,8 +310,8 @@ const confirmEmailTemplate = (confirmUrl: string) => {
                   >
                     <p style="margin: 0">
                       Cheers,<br />
-                      <a target="_blank" href="http://zoz.gg/guustavocl"
-                        >@Guustavocl</a
+                      <a target="_blank" href="http://zoz.gg/gustavo"
+                        >@Gustavo</a
                       >
                     </p>
                   </td>
