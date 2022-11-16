@@ -7,6 +7,7 @@
     "dev": "nodemon",
     "start": "npm run build && node build/index.js",
     "build": "npx tsc",
+    "start-prod": "NODE_MODE=prod node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
