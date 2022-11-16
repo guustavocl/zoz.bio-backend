@@ -1,10 +1,11 @@
 import express from "express";
 import userController from "../controllers/user.controller";
+import { authenticateToken } from "../middleware/auth";
 import { rateLimiterDay } from "../middleware/rateLimiter";
 
 const router = express.Router();
 
-router.get("/", userController.getUser);
+router.get("/", authenticateToken(), userController.getUser);
 router.post(
   "/create",
   rateLimiterDay(3, "You cant create more accounts for today!", true),

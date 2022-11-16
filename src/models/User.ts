@@ -5,7 +5,16 @@ export interface IUser extends mongoose.Document {
   uname: string;
   email: string;
   password: string;
-  isEmailConfirmed: Boolean;
+  loginCount: string;
+  lastLoginIP: string;
+  lastLoginDate: Date;
+  subscriptionUntil: Date;
+  subscription: string;
+  isEmailConfirmed: boolean;
+  isBanned: boolean;
+  isBlocked: boolean;
+  isMod: boolean;
+  isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,8 +42,8 @@ const User = new mongoose.Schema(
     loginCount: { type: Number, default: 0 },
     lastLoginIP: { type: String },
     lastLoginDate: { type: Date },
-    membershipUntil: { type: Date },
-    membership: {
+    subscriptionUntil: { type: Date },
+    subscription: {
       type: String,
       enum: ["vip", "partner", "member", "org", "none"],
       default: "none",
@@ -51,8 +60,13 @@ const User = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform: (document, returnedObject) => {
+        delete returnedObject._id;
         delete returnedObject.__v;
         delete returnedObject.password;
+        delete returnedObject.loginCount;
+        delete returnedObject.updatedAt;
+        delete returnedObject.createdAt;
+        delete returnedObject.isEmailConfirmed;
       },
     },
   }
@@ -77,8 +91,8 @@ User.path("email").validate(
 );
 User.path("email").validate(
   async (email: string) => {
-    const emailFromDb = await mongoose.models.User.countDocuments({ email });
-    return !emailFromDb;
+    const emailCount = await mongoose.models.User.countDocuments({ email });
+    return !emailCount;
   },
   "This email is already registered!",
   "DUPLICATED"

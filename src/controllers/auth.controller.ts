@@ -22,7 +22,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       //latter includes banned user condition
 
       if (bcrypt.compareSync(password, user.password)) {
-        console.log("password matchs");
         const token = generateAccessToken(user);
         return res.status(200).json({
           message: "Login success",

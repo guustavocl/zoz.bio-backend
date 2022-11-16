@@ -6,10 +6,23 @@ import crypto from "crypto";
 import sendConfirmationMail from "../utils/mailSender";
 import Token, { IToken } from "../models/Token";
 import moment from "moment";
+import Page from "../models/Page";
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(200).json({ message: "success!" });
+    const { email } = req.query;
+    let user = await User.findOne({ email: email });
+    if (user) {
+      let pages = await Page.find(
+        { userOwner: user },
+        { _id: 0, privatePassword: 0, userOwner: 0, __v: 0 }
+      );
+      return res.status(200).json({
+        user: user.toJSON(),
+        pages: pages,
+      });
+    }
+    res.status(404).json({ message: "user not found!" });
   } catch (error) {
     next(error);
   }
