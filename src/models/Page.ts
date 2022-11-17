@@ -93,7 +93,9 @@ const Page = new mongoose.Schema(
 
 Page.path("pagename").validate(
   async (pagename: string) => {
-    const pagesCount = await mongoose.models.Page.countDocuments({ pagename });
+    const pagesCount = await mongoose.models.Page.countDocuments({
+      pagename: { $regex: new RegExp(`^${pagename}$`, "i") },
+    });
     return !pagesCount;
   },
   "This Page name is already is use!",

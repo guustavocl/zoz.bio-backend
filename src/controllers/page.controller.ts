@@ -5,9 +5,13 @@ import logger from "../utils/logger";
 
 const getPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { pagename } = req.query;
-    const page = await Page.findOne({ pagename: pagename });
-    if (page) return res.status(200).json({ page: page.toJSON() });
+    let { pagename } = req.query;
+    if (pagename) {
+      const page = await Page.findOne({
+        pagename: pagename.toString().toLowerCase(),
+      });
+      if (page) return res.status(200).json({ page: page.toJSON() });
+    }
     res.status(404).json({ message: "Page not found!" });
   } catch (error) {
     next(error);
@@ -18,7 +22,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let { pagename } = req.body;
     const { userPayload } = res.locals;
-    pagename = pagename.replace(/[^a-z0-9_-]+|\s+/gim, "");
+    pagename = pagename.replace(/[^a-z0-9_-]+|\s+/gim, "").toLowerCase();
     const user = await User.findOne({ _id: userPayload._id });
 
     if (user) {
