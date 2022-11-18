@@ -1,12 +1,23 @@
 import mongoose from "mongoose";
 import { IUser } from "./User";
 
+export interface IPageLinks {
+  _id: string;
+  url: string;
+}
+export interface IPageStatus {
+  key: string;
+  message: string;
+}
+export interface IPageSocialMedia {
+  username: string;
+  key: string;
+}
 export interface IPage extends mongoose.Document {
   pagename: string;
   uname: string;
-  status: string;
+  status: IPageStatus;
   bio: string;
-
   pfpUrl: string;
   bannerUrl: string;
   backgroundUrl: string;
@@ -24,6 +35,15 @@ export interface IPage extends mongoose.Document {
   isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
+  adornment: string;
+  fontColor: string;
+  backgroundSize: string;
+  backGroundOpacity: number;
+  cardBlur: string;
+  cardHueRotate: string;
+  badges: string[];
+  socialMedias: IPageSocialMedia[];
+  pageLinks: IPageLinks[];
 }
 
 const Page = new mongoose.Schema(
@@ -39,10 +59,7 @@ const Page = new mongoose.Schema(
       type: String,
       maxLength: [25, "Name must be less than 25 characters length"],
     },
-    status: {
-      type: String,
-      maxLength: [15, "Status must be less than 15 characters length"],
-    },
+    status: { key: String, message: String },
     bio: {
       type: String,
       maxLength: [200, "Bio must be less than 200 characters length"],
@@ -75,6 +92,16 @@ const Page = new mongoose.Schema(
     isAdmin: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
+
+    adornment: { type: String },
+    fontColor: { type: String },
+    backgroundSize: { type: String },
+    backGroundOpacity: { type: String },
+    cardBlur: { type: String },
+    cardHueRotate: { type: String },
+    badges: [{ type: String }],
+    socialMedias: [{ key: String, username: String }],
+    pageLinks: [{ _id: String, url: String }],
   },
   {
     timestamps: true,

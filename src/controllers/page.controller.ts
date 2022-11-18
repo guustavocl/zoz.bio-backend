@@ -56,6 +56,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
           logger.info(page.toJSON(), "page created");
           return res.status(201).json({
             message: "Page successfully created",
+            page: page.toJSON(),
           });
         })
         .catch((error: any) => {
