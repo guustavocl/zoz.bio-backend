@@ -2,6 +2,7 @@ import express from "express";
 import pageController from "../controllers/page.controller";
 import { authenticateToken } from "../middleware/auth";
 import { rateLimiterHour } from "../middleware/rateLimiter";
+import { uploadAvatar } from "../middleware/uploadFile";
 
 const router = express.Router();
 
@@ -11,6 +12,19 @@ router.post(
   rateLimiterHour(30, "You cant create more pages for now", true),
   authenticateToken(),
   pageController.createPage
+);
+router.get(
+  "/check_pagename",
+  authenticateToken(),
+  pageController.checkPagename
+);
+router.post("/save_info", authenticateToken(), pageController.savePageInfo);
+
+router.post(
+  "/upload_avatar",
+  authenticateToken(),
+  uploadAvatar(),
+  pageController.uploadAvatar
 );
 
 export = router;

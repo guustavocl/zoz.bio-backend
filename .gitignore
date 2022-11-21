@@ -1,5 +1,7 @@
 # Logs
 logs
+upload
+uploads
 .env
 config.json
 *.log

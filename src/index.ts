@@ -27,10 +27,9 @@ mongoose
 
 const runServer = () => {
   /* CONFIGS */
+  router.use(bodyParser.json({ limit: "5mb" }));
+  router.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
   router.use(cors());
-  router.use(bodyParser.json({ limit: "15mb" }));
-  // router.use(express.json());
-  router.use(express.urlencoded({ extended: true }));
 
   /* LOGGER */
   router.use(reqLogger());

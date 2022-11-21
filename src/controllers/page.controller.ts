@@ -27,7 +27,6 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
 
     if (user) {
       const countPages = await Page.countDocuments({ userOwner: user._id });
-      console.log("total pages do user: ", countPages);
 
       if (user.subscription === "none" && countPages >= 2) {
         return res.status(401).json({
@@ -42,7 +41,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
         });
       }
 
-      //everything went fine so proceedo to create the page
+      //everything went fine so proceed to create the page
       await new Page({
         pagename: pagename,
         userOwner: user._id,
@@ -72,7 +71,112 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const checkPagename = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let { pagename } = req.query;
+    if (pagename) {
+      const countPages = await Page.countDocuments({ pagename: pagename });
+      if (countPages > 0) {
+        return res.status(200).json({ isAvailable: false });
+      }
+      return res.status(200).json({ isAvailable: true });
+    }
+    res.status(404).json({ message: "Invalid pagename" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const savePageInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let { uname, bio, pagename } = req.body;
+    const { userPayload } = res.locals;
+
+    if (userPayload) {
+      let pageSaved = await Page.findOneAndUpdate(
+        { userOwner: userPayload._id, pagename: pagename },
+        { uname, bio },
+        { new: true }
+      );
+      console.log(pageSaved);
+      if (pageSaved) {
+        return res.status(201).json({
+          message: "Page successfully saved",
+          page: pageSaved.toJSON(),
+        });
+      }
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    } else {
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const uploadAvatar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { pagename } = req.query;
+    const { userPayload } = res.locals;
+    console.log("controler");
+    console.log(pagename);
+    if (req.file) {
+      console.log("tem files");
+      console.log(req.file);
+    }
+
+    // console.log(req.file);
+
+    const user = await User.findOne({ _id: userPayload._id });
+
+    if (user) {
+      //image
+
+      // let pageSaved = await Page.findOneAndUpdate(
+      //   { userOwner: user, pagename: pagename },
+      //   { uname, bio },
+      //   { new: true }
+      // );
+      // console.log(pageSaved);
+      // if (pageSaved) {
+      //   return res.status(201).json({
+      //     message: "Page successfully saved",
+      //     page: pageSaved.toJSON(),
+      //   });
+      // }
+      return res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    } else {
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getPage,
   createPage,
+  checkPagename,
+  savePageInfo,
+  uploadAvatar,
 };
