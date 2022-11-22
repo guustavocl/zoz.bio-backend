@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import Page, { IPage } from "../models/Page";
 import User, { IUser } from "../models/User";
 import logger from "../utils/logger";
+import sharp from "sharp";
+import fs from "fs";
 
 const getPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -101,12 +103,11 @@ const savePageInfo = async (
     const { userPayload } = res.locals;
 
     if (userPayload) {
-      let pageSaved = await Page.findOneAndUpdate(
+      const pageSaved = await Page.findOneAndUpdate(
         { userOwner: userPayload._id, pagename: pagename },
         { uname, bio },
         { new: true }
       );
-      console.log(pageSaved);
       if (pageSaved) {
         return res.status(201).json({
           message: "Page successfully saved",
@@ -134,33 +135,124 @@ const uploadAvatar = async (
   try {
     const { pagename } = req.query;
     const { userPayload } = res.locals;
-    console.log("controler");
-    console.log(pagename);
-    if (req.file) {
-      console.log("tem files");
-      console.log(req.file);
-    }
-
-    // console.log(req.file);
-
     const user = await User.findOne({ _id: userPayload._id });
+    if (user && req.file) {
+      const imagePath = req.file.destination.replace("uploads", "images");
+      sharp(req.file.path, { pages: -1 })
+        .resize(400, 400, { fit: "inside" })
+        .webp()
+        .toFile(`${imagePath}/avatar.webp`, async (err, info) => {
+          if (err) {
+            logger.error(err, "Error while trying to sharp file");
+            return res.status(400).json({
+              message: "Something went wrong D:",
+            });
+          }
+          if (req.file?.path)
+            fs.unlink(req.file.path, function (err) {
+              if (err) {
+                logger.error(err, "Error while trying to remove file");
+              }
+            });
 
-    if (user) {
-      //image
+          const pageSaved = await Page.findOneAndUpdate(
+            { userOwner: user, pagename: pagename },
+            {
+              pfpUrl: `https://api.zoz.gg/${imagePath}/avatar.webp?v=${new Date().getTime()}`,
+            },
+            { new: true }
+          );
+          if (pageSaved) {
+            return res.status(200).json({
+              message: "Avatar successfully saved",
+              page: pageSaved.toJSON(),
+            });
+          }
+        });
+    } else {
+      res.status(400).json({
+        message: "Something went wrong D:",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 
-      // let pageSaved = await Page.findOneAndUpdate(
-      //   { userOwner: user, pagename: pagename },
-      //   { uname, bio },
-      //   { new: true }
-      // );
-      // console.log(pageSaved);
-      // if (pageSaved) {
-      //   return res.status(201).json({
-      //     message: "Page successfully saved",
-      //     page: pageSaved.toJSON(),
-      //   });
-      // }
-      return res.status(404).json({
+const uploadBackground = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { pagename } = req.query;
+    const { userPayload } = res.locals;
+    const user = await User.findOne({ _id: userPayload._id });
+    if (user && req.file) {
+      const imagePath = req.file.destination.replace("uploads", "images");
+      sharp(req.file.path, { pages: -1 })
+        // .resize(1600, 900, { fit: "inside" })
+        .webp()
+        .toFile(`${imagePath}/bg.webp`, async (err, info) => {
+          if (err) {
+            logger.error(err, "Error while trying to sharp file");
+            return res.status(400).json({
+              message: "Something went wrong D:",
+            });
+          }
+          if (req.file?.path)
+            fs.unlink(req.file.path, function (err) {
+              if (err) {
+                logger.error(err, "Error while trying to remove file");
+              }
+            });
+
+          const pageSaved = await Page.findOneAndUpdate(
+            { userOwner: user, pagename: pagename },
+            {
+              backgroundUrl: `https://api.zoz.gg/${imagePath}/bg.webp?v=${new Date().getTime()}`,
+            },
+            { new: true }
+          );
+          if (pageSaved) {
+            return res.status(200).json({
+              message: "Background successfully saved",
+              page: pageSaved.toJSON(),
+            });
+          }
+        });
+    } else {
+      res.status(400).json({
+        message: "Something went wrong D:",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateColors = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let { primaryColor, secondaryColor, fontColor, pagename } = req.body;
+    const { userPayload } = res.locals;
+
+    if (userPayload) {
+      const pageSaved = await Page.findOneAndUpdate(
+        { userOwner: userPayload._id, pagename: pagename },
+        { primaryColor, secondaryColor, fontColor },
+        { new: true }
+      );
+      if (pageSaved) {
+        return res.status(201).json({
+          message: "Color successfully saved",
+          page: pageSaved.toJSON(),
+        });
+      }
+      res.status(404).json({
         message: "Something went wrong D:",
       });
     } else {
@@ -179,4 +271,6 @@ export default {
   checkPagename,
   savePageInfo,
   uploadAvatar,
+  uploadBackground,
+  updateColors,
 };

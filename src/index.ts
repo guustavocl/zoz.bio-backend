@@ -44,6 +44,7 @@ const runServer = () => {
   router.use("/user", userRoutes);
   router.use("/auth", authRoutes);
   router.use("/page", pageRoutes);
+  router.use("/images", express.static("images"));
 
   /* CHECK */
   router.get("/ping", (req, res, next) =>

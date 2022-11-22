@@ -22,8 +22,8 @@ export interface IPage extends mongoose.Document {
   bannerUrl: string;
   backgroundUrl: string;
   backgroundOpacity: string;
-  primaryColor: string;
-  secondaryColor: string;
+  primaryColor: Object;
+  secondaryColor: Object;
   userOwner: IUser;
   subscription: string;
   isUnderConstruction: boolean;
@@ -68,8 +68,8 @@ const Page = new mongoose.Schema(
     bannerUrl: { type: String },
     backgroundUrl: { type: String },
     backgroundOpacity: { type: String },
-    primaryColor: { type: String },
-    secondaryColor: { type: String },
+    primaryColor: { type: Object },
+    secondaryColor: { type: Object },
     userOwner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

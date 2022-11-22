@@ -2,7 +2,7 @@ import express from "express";
 import pageController from "../controllers/page.controller";
 import { authenticateToken } from "../middleware/auth";
 import { rateLimiterHour } from "../middleware/rateLimiter";
-import { uploadAvatar } from "../middleware/uploadFile";
+import { uploadAvatar, uploadBackground } from "../middleware/uploadFile";
 
 const router = express.Router();
 
@@ -26,5 +26,13 @@ router.post(
   uploadAvatar(),
   pageController.uploadAvatar
 );
+router.post(
+  "/upload_background",
+  authenticateToken(),
+  uploadBackground(),
+  pageController.uploadBackground
+);
+
+router.post("/update_colors", authenticateToken(), pageController.updateColors);
 
 export = router;
