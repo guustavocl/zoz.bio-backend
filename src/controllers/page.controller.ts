@@ -127,6 +127,40 @@ const savePageInfo = async (
   }
 };
 
+const saveSocialMedia = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let { items, pagename } = req.body;
+    const { userPayload } = res.locals;
+
+    if (userPayload) {
+      const pageSaved = await Page.findOneAndUpdate(
+        { userOwner: userPayload._id, pagename: pagename },
+        { socialMedias: items },
+        { new: true }
+      );
+      if (pageSaved) {
+        return res.status(201).json({
+          message: "Page successfully saved",
+          page: pageSaved.toJSON(),
+        });
+      }
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    } else {
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 const uploadAvatar = async (
   req: Request,
   res: Response,
@@ -270,6 +304,7 @@ export default {
   createPage,
   checkPagename,
   savePageInfo,
+  saveSocialMedia,
   uploadAvatar,
   uploadBackground,
   updateColors,
