@@ -1,10 +1,19 @@
 import mongoose from "mongoose";
+import { ILink } from "./Link";
 import { IUser } from "./User";
 
-export interface IPageLinks {
-  _id: string;
-  url: string;
-}
+// export interface IPageLinks {
+//   _id: string;
+//   url: string;
+//   label: string;
+//   icon: string;
+//   position: number;
+//   isHidden: boolean;
+//   isFolder: boolean;
+//   embedded: string;
+//   links: IPageLinks[];
+// }
+
 export interface IPageStatus {
   key: string;
   message: string;
@@ -43,7 +52,7 @@ export interface IPage extends mongoose.Document {
   cardHueRotate: string;
   badges: string[];
   socialMedias: IPageSocialMedia[];
-  pageLinks: IPageLinks[];
+  pageLinks: ILink[];
 }
 
 const Page = new mongoose.Schema(
@@ -52,7 +61,7 @@ const Page = new mongoose.Schema(
       type: String,
       required: [true, "Please inform a page name"],
       minLength: [1, "Page name must be at least 1 characters length"],
-      maxLength: [30, "Page name be less than 30 characters length"],
+      maxLength: [30, "Page name must be less than 30 characters length"],
       unique: [true, "Page name is already in use, choose another name"],
     },
     uname: {
@@ -101,7 +110,7 @@ const Page = new mongoose.Schema(
     cardHueRotate: { type: String },
     badges: [{ type: String }],
     socialMedias: [{ key: String, username: String }],
-    pageLinks: [{ _id: String, url: String }],
+    pageLinks: { type: Array<ILink> },
   },
   {
     timestamps: true,
@@ -120,6 +129,7 @@ const Page = new mongoose.Schema(
 
 Page.path("pagename").validate(
   async (pagename: string) => {
+    console.log("validate pagename");
     const pagesCount = await mongoose.models.Page.countDocuments({
       pagename: { $regex: new RegExp(`^${pagename}$`, "i") },
     });

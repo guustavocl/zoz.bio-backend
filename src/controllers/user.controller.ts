@@ -39,7 +39,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     })
       .save()
       .then(async (user: IUser) => {
-        logger.info(user.toJSON(), "user created");
+        logger.info(user.toJSON(), "New User created");
         res.status(201).json({
           message:
             "Successfully registered, please confirm your email to sign in",

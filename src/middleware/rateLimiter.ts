@@ -2,7 +2,7 @@ import rateLimit from "express-rate-limit";
 
 export const rateLimiter = (
   options = {
-    windowMs: 15 * 60 * 1000,
+    windowMs: 3 * 60 * 1000,
     max: 100,
     message: "You can't make any more requests at the moment. Try again later",
     skipFailedRequests: false,

@@ -1,9 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import Page, { IPage } from "../models/Page";
-import User, { IUser } from "../models/User";
+import User from "../models/User";
 import logger from "../utils/logger";
 import sharp from "sharp";
 import fs from "fs";
+
+// const apiPath = "https://api.zoz.gg/";
+const apiPath = "http://127.0.0.1:3100/";
 
 const getPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -36,10 +39,16 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
         });
       }
 
-      if (user.subscription === "none" && pagename.length <= 4) {
+      if (user.subscription === "none" && pagename.length < 5) {
         return res.status(401).json({
           message:
             "You can't create short name pages without a valid subscription",
+        });
+      }
+
+      if (pagename.length <= 1) {
+        return res.status(401).json({
+          message: "You can't use this pagename",
         });
       }
 
@@ -54,7 +63,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
       })
         .save()
         .then(async (page: IPage) => {
-          logger.info(page.toJSON(), "page created");
+          logger.info(page.toJSON(), "New Page created");
           return res.status(201).json({
             message: "Page successfully created",
             page: page.toJSON(),
@@ -99,13 +108,57 @@ const savePageInfo = async (
   next: NextFunction
 ) => {
   try {
-    let { uname, bio, pagename } = req.body;
+    let { uname, bio, pagename, newPagename } = req.body;
+    newPagename = newPagename.replace(/[^a-z0-9_-]+|\s+/gim, "").toLowerCase();
+    const { userPayload } = res.locals;
+    const user = await User.findOne({ _id: userPayload._id });
+    if (user) {
+      if (user.subscription === "none" && newPagename.length < 5) {
+        return res.status(401).json({
+          message:
+            "You can't create short name pages without a valid subscription",
+        });
+      }
+
+      if (newPagename.length <= 1) {
+        return res.status(401).json({
+          message: "You can't use this pagename",
+        });
+      }
+
+      const pageSaved = await Page.findOneAndUpdate(
+        { userOwner: userPayload._id, pagename: pagename },
+        { uname, bio, pagename: newPagename },
+        { new: true }
+      );
+      if (pageSaved) {
+        return res.status(201).json({
+          message: "Page successfully saved",
+          page: pageSaved.toJSON(),
+        });
+      }
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    } else {
+      res.status(404).json({
+        message: "Something went wrong D:",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let { badges, pagename } = req.body;
     const { userPayload } = res.locals;
 
     if (userPayload) {
       const pageSaved = await Page.findOneAndUpdate(
         { userOwner: userPayload._id, pagename: pagename },
-        { uname, bio },
+        { badges },
         { new: true }
       );
       if (pageSaved) {
@@ -192,7 +245,7 @@ const uploadAvatar = async (
           const pageSaved = await Page.findOneAndUpdate(
             { userOwner: user, pagename: pagename },
             {
-              pfpUrl: `https://api.zoz.gg/${imagePath}/avatar.webp?v=${new Date().getTime()}`,
+              pfpUrl: `${apiPath}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
             },
             { new: true }
           );
@@ -244,7 +297,7 @@ const uploadBackground = async (
           const pageSaved = await Page.findOneAndUpdate(
             { userOwner: user, pagename: pagename },
             {
-              backgroundUrl: `https://api.zoz.gg/${imagePath}/bg.webp?v=${new Date().getTime()}`,
+              backgroundUrl: `${apiPath}${imagePath}/bg.webp?v=${new Date().getTime()}`,
             },
             { new: true }
           );
@@ -304,6 +357,7 @@ export default {
   createPage,
   checkPagename,
   savePageInfo,
+  saveBadges,
   saveSocialMedia,
   uploadAvatar,
   uploadBackground,

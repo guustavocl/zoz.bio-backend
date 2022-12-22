@@ -19,6 +19,7 @@ router.get(
   pageController.checkPagename
 );
 router.post("/save_info", authenticateToken(), pageController.savePageInfo);
+router.post("/save_badges", authenticateToken(), pageController.saveBadges);
 router.post(
   "/save_social_media",
   authenticateToken(),

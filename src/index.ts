@@ -11,6 +11,7 @@ import logger from "./utils/logger";
 import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.routes";
 import pageRoutes from "./routes/page.routes";
+import linkRoutes from "./routes/link.routes";
 import { rateLimiter } from "./middleware/rateLimiter";
 
 const router = express();
@@ -27,8 +28,8 @@ mongoose
 
 const runServer = () => {
   /* CONFIGS */
-  router.use(bodyParser.json({ limit: "5mb" }));
-  router.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
+  router.use(bodyParser.json({ limit: "10mb" }));
+  router.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
   router.use(cors());
 
   /* LOGGER */
@@ -44,6 +45,7 @@ const runServer = () => {
   router.use("/user", userRoutes);
   router.use("/auth", authRoutes);
   router.use("/page", pageRoutes);
+  router.use("/link", linkRoutes);
   router.use("/images", express.static("images"));
 
   /* CHECK */
