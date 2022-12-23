@@ -40,7 +40,10 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
       } else {
         //check total links and folder max free created is 10
         newLink = await new Link({
-          url: link.url, //can validade and filter url here later,
+          url:
+            link.embedded !== "none"
+              ? link.url.replace("open.spotify.com/", "open.spotify.com/embed/")
+              : link.url, //can validade and filter url here later,
           label: link.label, // can filter label here later for bad words
           icon: link.icon ? link.icon : "link",
           embedded: link.embedded,
