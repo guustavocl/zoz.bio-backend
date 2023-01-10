@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from "express";
+import { config } from "../config/config";
 import Page, { IPage } from "../models/Page";
 import User from "../models/User";
 import logger from "../utils/logger";
 import sharp from "sharp";
 import fs from "fs";
-
-// const apiPath = "https://api.zoz.gg/";
-const apiPath = "http://127.0.0.1:3100/";
 
 const getPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -245,7 +243,9 @@ const uploadAvatar = async (
           const pageSaved = await Page.findOneAndUpdate(
             { userOwner: user, pagename: pagename },
             {
-              pfpUrl: `${apiPath}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
+              pfpUrl: `${
+                config.apiUrl
+              }${imagePath}/avatar.webp?v=${new Date().getTime()}`,
             },
             { new: true }
           );
@@ -297,7 +297,9 @@ const uploadBackground = async (
           const pageSaved = await Page.findOneAndUpdate(
             { userOwner: user, pagename: pagename },
             {
-              backgroundUrl: `${apiPath}${imagePath}/bg.webp?v=${new Date().getTime()}`,
+              backgroundUrl: `${
+                config.apiUrl
+              }${imagePath}/bg.webp?v=${new Date().getTime()}`,
             },
             { new: true }
           );
