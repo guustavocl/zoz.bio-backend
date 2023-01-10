@@ -29,10 +29,8 @@ export const config = {
   server: {
     port: process.env.NODE_MODE === "prod" ? 3000 : 3100,
   },
-  apiUrl: {
-    port:
-      process.env.NODE_MODE === "prod"
-        ? "https://api.zoz.gg/"
-        : "http://127.0.0.1:3100/",
-  },
+  apiUrl:
+    process.env.NODE_MODE === "prod"
+      ? "https://api.zoz.gg/"
+      : "http://127.0.0.1:3100/",
 };
