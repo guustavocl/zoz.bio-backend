@@ -34,3 +34,5 @@ export const config = {
       ? "https://api.zoz.gg/"
       : "http://127.0.0.1:3100/",
 };
+
+// example url: mongodb://user:passwd@host:27117/zoz?authSource=admin

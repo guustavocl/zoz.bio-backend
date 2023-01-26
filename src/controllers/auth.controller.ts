@@ -1,12 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import User, { IUser } from "../models/User";
-import logger from "../utils/logger";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import sendConfirmationMail from "../utils/mailSender";
-import Token, { IToken } from "../models/Token";
-import moment from "moment";
 import { generateAccessToken } from "../middleware/auth";
+import User from "../models/User";
+import bcrypt from "bcryptjs";
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -19,7 +14,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
           message: "Your must confirm your email before sign in",
         });
       }
-      //latter includes banned user condition
+      //TODO latter includes banned user condition
 
       if (bcrypt.compareSync(password, user.password)) {
         const token = generateAccessToken(user);

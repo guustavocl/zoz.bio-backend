@@ -3,11 +3,35 @@ import Link, { ILink } from "../models/Link";
 import Page from "../models/Page";
 import logger from "../utils/logger";
 
+const getFolders = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let { pagename } = req.query;
+    const { userPayload } = res.locals;
+    if (pagename) {
+      const page = await Page.findOne({
+        userOwner: userPayload._id,
+        pagename: pagename,
+      });
+      if (page) {
+        const folders = await Link.find({
+          isFolder: true,
+          pageOwner: page._id,
+        });
+        return res.status(200).json({
+          folders: folders,
+        });
+      }
+    }
+    res.status(404).json({ message: "Page not found!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { link, pagename } = req.body;
     const { userPayload } = res.locals;
-    console.log(link);
 
     const page = await Page.findOne({
       userOwner: userPayload ? userPayload._id : null,
@@ -23,7 +47,7 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
 
       if (link.isFolder) {
         newLink = await new Link({
-          label: link.label, // can filter label here later for bad words
+          label: link.label, //TODO can filter label here later for bad words
           icon: link.icon ? link.icon : "folder",
           embedded: "none",
           isFolder: true,
@@ -38,17 +62,27 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
             next(error);
           });
       } else {
-        //check total links and folder max free created is 10
+        //TODO check total links and folder max free created is 10
+        let url = link.url;
+        if (link.embedded !== "none") {
+          if (link.embedded === "spotify") {
+            const urlArray = url.split("/").reverse();
+            url = urlArray[0];
+          } else if (link.embedded === "soundcloud") {
+            url = url.replace("https://soundcloud.com", "");
+          } else {
+            const urlArray = url.split("=").reverse();
+            url = urlArray[0];
+          }
+        }
+
         newLink = await new Link({
-          url:
-            link.embedded !== "none"
-              ? link.url.replace("open.spotify.com/", "open.spotify.com/embed/")
-              : link.url, //can validade and filter url here later,
-          label: link.label, // can filter label here later for bad words
+          url: url, //TODO validade safe urls here later
+          label: link.label, //TODO can filter label here later for bad words
           icon: link.icon ? link.icon : "link",
           embedded: link.embedded,
           pageOwner: page,
-          folderOnwer: link.folderOnwer,
+          folderOwner: link.folderOwner ? link.folderOwner : null,
           position: countLinks + 1,
         })
           .save()
@@ -98,6 +132,7 @@ const updateLink = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export default {
+  getFolders,
   createLink,
   updateLink,
 };

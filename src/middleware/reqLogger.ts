@@ -15,11 +15,13 @@ export const reqLogger =
     /* RESPONSE LOGGER */
     res.on("finish", () => {
       logger.info(
-        `# [${req.method} - RES ${res.statusCode}] - Path: [${
-          req.originalUrl
-        }] - IP: [${
+        `# [${req.method.padEnd(4, " ")} RES ${res.statusCode}] IP: [${
           req.socket.remoteAddress
-        }] - Duration: [${getDurationInMilliseconds(start)}s]`
+        }] - Duration: [${getDurationInMilliseconds(start).toFixed(
+          6
+        )}s] PATH: [${req.originalUrl}] USER: [${
+          res.locals?.userPayload?._id || "none"
+        }]`
       );
     });
 

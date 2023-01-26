@@ -13,10 +13,7 @@ const getUser = async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.query;
     let user = await User.findOne({ email: email });
     if (user) {
-      let pages = await Page.find(
-        { userOwner: user },
-        { _id: 0, privatePassword: 0, userOwner: 0, __v: 0 }
-      );
+      let pages = await Page.find({ userOwner: user });
       return res.status(200).json({
         user: user.toJSON(),
         pages: pages,

@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
+import timeout from "connect-timeout";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import { config } from "./config/config";
@@ -28,6 +29,7 @@ mongoose
 
 const runServer = () => {
   /* CONFIGS */
+  router.use(timeout("30s"));
   router.use(bodyParser.json({ limit: "10mb" }));
   router.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
   router.use(cors());

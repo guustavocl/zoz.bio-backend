@@ -48,10 +48,10 @@ const Link = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform: (document, returnedObject) => {
-        delete returnedObject._id;
         delete returnedObject.__v;
         delete returnedObject.updatedAt;
         delete returnedObject.createdAt;
+        delete returnedObject.pageOwner;
       },
     },
   }
