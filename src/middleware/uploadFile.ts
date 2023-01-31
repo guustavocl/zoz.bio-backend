@@ -10,8 +10,8 @@ const multerBgStorage = (): multer.StorageEngine => {
     destination: (req, file, cb) => {
       if (req.res) {
         const { userPayload } = req.res.locals;
-        let uploadsURL = `uploads/${userPayload._id}/${page_id}`;
-        let imagesURL = `images/${userPayload._id}/${page_id}`;
+        const uploadsURL = `uploads/${userPayload._id}/${page_id}`;
+        const imagesURL = `images/${userPayload._id}/${page_id}`;
         if (!fs.existsSync(imagesURL)) {
           fs.mkdirSync(imagesURL, { recursive: true });
         }
@@ -32,8 +32,8 @@ const multerAvatarStorage = (): multer.StorageEngine => {
     destination: (req, file, cb) => {
       if (req.res) {
         const { userPayload } = req.res.locals;
-        let uploadsURL = `uploads/${userPayload._id}/${page_id}`;
-        let imagesURL = `images/${userPayload._id}/${page_id}`;
+        const uploadsURL = `uploads/${userPayload._id}/${page_id}`;
+        const imagesURL = `images/${userPayload._id}/${page_id}`;
         if (!fs.existsSync(imagesURL)) {
           fs.mkdirSync(imagesURL, { recursive: true });
         }
@@ -50,11 +50,7 @@ const multerAvatarStorage = (): multer.StorageEngine => {
 };
 
 const multerFileFilter = () => {
-  return (
-    req: Request,
-    file: Express.Multer.File,
-    cb: multer.FileFilterCallback
-  ) => {
+  return (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     const type = mime.extension(file.mimetype);
     const conditions = ["png", "jpg", "jpeg", "gif"];
     if (conditions.includes(`${type}`)) {
@@ -80,42 +76,40 @@ const getBgConfig = (): multer.Options => {
   };
 };
 
-export const uploadAvatar =
-  () => async (req: Request, res: Response, next: NextFunction) => {
-    const { pagename } = req.query;
-    const { userPayload } = res.locals;
-    const page = await Page.findOne({
-      userOwner: userPayload._id,
-      pagename: pagename,
+export const uploadAvatar = () => async (req: Request, res: Response, next: NextFunction) => {
+  const { pagename } = req.query;
+  const { userPayload } = res.locals;
+  const page = await Page.findOne({
+    userOwner: userPayload._id,
+    pagename: pagename,
+  });
+  if (page) {
+    page_id = page._id;
+    multer(getAvatarConfig()).single("avatar")(req, res, () => {
+      if (!req.file)
+        return res.status(400).json({
+          message: "File unsuported or larger than 5mb",
+        });
+      next();
     });
-    if (page) {
-      page_id = page._id;
-      multer(getAvatarConfig()).single("avatar")(req, res, () => {
-        if (!req.file)
-          return res.status(400).json({
-            message: "File unsuported or larger than 5mb",
-          });
-        next();
-      });
-    }
-  };
+  }
+};
 
-export const uploadBackground =
-  () => async (req: Request, res: Response, next: NextFunction) => {
-    const { pagename } = req.query;
-    const { userPayload } = res.locals;
-    const page = await Page.findOne({
-      userOwner: userPayload._id,
-      pagename: pagename,
+export const uploadBackground = () => async (req: Request, res: Response, next: NextFunction) => {
+  const { pagename } = req.query;
+  const { userPayload } = res.locals;
+  const page = await Page.findOne({
+    userOwner: userPayload._id,
+    pagename: pagename,
+  });
+  if (page) {
+    page_id = page._id;
+    multer(getBgConfig()).single("background")(req, res, () => {
+      if (!req.file)
+        return res.status(400).json({
+          message: "File unsuported or larger than 5mb",
+        });
+      next();
     });
-    if (page) {
-      page_id = page._id;
-      multer(getBgConfig()).single("background")(req, res, () => {
-        if (!req.file)
-          return res.status(400).json({
-            message: "File unsuported or larger than 5mb",
-          });
-        next();
-      });
-    }
-  };
+  }
+};

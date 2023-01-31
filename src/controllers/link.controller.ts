@@ -5,7 +5,7 @@ import logger from "../utils/logger";
 
 const getFolders = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { pagename } = req.query;
+    const { pagename } = req.query;
     const { userPayload } = res.locals;
     if (pagename) {
       const page = await Page.findOne({
@@ -40,7 +40,7 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
 
     if (userPayload && page) {
       let newLink;
-      let countLinks = await Link.countDocuments({
+      const countLinks = await Link.countDocuments({
         pageOwner: page,
         folderOnwer: link.folderOnwer ? link.folderOnwer : null,
       });
@@ -58,7 +58,7 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
           .then(async (saved: ILink) => {
             return saved;
           })
-          .catch((error: any) => {
+          .catch(error => {
             next(error);
           });
       } else {
@@ -89,14 +89,14 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
           .then(async (saved: ILink) => {
             return saved;
           })
-          .catch((error: any) => {
+          .catch(error => {
             next(error);
           });
       }
 
       if (newLink) {
         logger.info(newLink.toJSON(), "New Link created");
-        let allLinks = await Link.find({ pageOwner: page });
+        const allLinks = await Link.find({ pageOwner: page });
 
         const pageSaved = await Page.findOneAndUpdate(
           { userOwner: userPayload._id, pagename: pagename },
@@ -125,7 +125,7 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { uname, email, password } = req.body;
+    // const { uname, email, password } = req.body;
   } catch (error) {
     next(error);
   }

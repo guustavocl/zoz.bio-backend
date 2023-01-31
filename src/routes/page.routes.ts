@@ -13,31 +13,13 @@ router.post(
   authenticateToken(),
   pageController.createPage
 );
-router.get(
-  "/check_pagename",
-  authenticateToken(),
-  pageController.checkPagename
-);
+router.get("/check_pagename", authenticateToken(), pageController.checkPagename);
 router.post("/save_info", authenticateToken(), pageController.savePageInfo);
 router.post("/save_badges", authenticateToken(), pageController.saveBadges);
-router.post(
-  "/save_social_media",
-  authenticateToken(),
-  pageController.saveSocialMedia
-);
+router.post("/save_social_media", authenticateToken(), pageController.saveSocialMedia);
 
-router.post(
-  "/upload_avatar",
-  authenticateToken(),
-  uploadAvatar(),
-  pageController.uploadAvatar
-);
-router.post(
-  "/upload_background",
-  authenticateToken(),
-  uploadBackground(),
-  pageController.uploadBackground
-);
+router.post("/upload_avatar", authenticateToken(), uploadAvatar(), pageController.uploadAvatar);
+router.post("/upload_background", authenticateToken(), uploadBackground(), pageController.uploadBackground);
 
 router.post("/update_colors", authenticateToken(), pageController.updateColors);
 

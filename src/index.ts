@@ -23,7 +23,7 @@ mongoose
     logger.info("Mongoose successfully connected!");
     runServer();
   })
-  .catch((error) => {
+  .catch(error => {
     logger.error(error, "Mongoose error");
   });
 
@@ -51,16 +51,12 @@ const runServer = () => {
   router.use("/images", express.static("images"));
 
   /* CHECK */
-  router.get("/ping", (req, res, next) =>
-    res.status(200).json({ message: "pong" })
-  );
+  router.get("/ping", (req, res) => res.status(200).json({ message: "pong" }));
 
   /* ERROR HANDLING */
   router.use(errorHandler());
 
   http
     .createServer(router)
-    .listen(config.server.port, () =>
-      logger.info(`Server running on port ${config.server.port}`)
-    );
+    .listen(config.server.port, () => logger.info(`Server running on port ${config.server.port}`));
 };

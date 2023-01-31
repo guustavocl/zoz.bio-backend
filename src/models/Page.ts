@@ -14,6 +14,12 @@ import { IUser } from "./User";
 //   links: IPageLinks[];
 // }
 
+export interface IColor {
+  r: number;
+  g: number;
+  b: number;
+}
+
 export interface IPageStatus {
   key: string;
   message: string;
@@ -31,8 +37,8 @@ export interface IPage extends mongoose.Document {
   bannerUrl: string;
   backgroundUrl: string;
   backgroundOpacity: string;
-  primaryColor: Object;
-  secondaryColor: Object;
+  primaryColor: IColor;
+  secondaryColor: IColor;
   userOwner: IUser;
   subscription: string;
   isUnderConstruction: boolean;

@@ -83,7 +83,7 @@ User.pre("save", async function (next) {
 
 User.path("email").validate(
   async (email: string) => {
-    let emailRegex = new RegExp("[a-zA-Z0-9]+@[a-zA-Z0-9]+.[a-zA-Z]{2,3}");
+    const emailRegex = new RegExp("[a-zA-Z0-9]+@[a-zA-Z0-9]+.[a-zA-Z]{2,3}");
     return emailRegex.test(email);
   },
   "This email is invalid",

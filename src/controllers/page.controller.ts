@@ -8,7 +8,7 @@ import fs from "fs";
 
 const getPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { pagename } = req.query;
+    const { pagename } = req.query;
     if (pagename) {
       const page = await Page.findOne({
         pagename: pagename.toString().toLowerCase(),
@@ -39,8 +39,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
 
       if (user.subscription === "none" && pagename.length < 5) {
         return res.status(401).json({
-          message:
-            "You can't create short name pages without a valid subscription",
+          message: "You can't create short name pages without a valid subscription",
         });
       }
 
@@ -67,7 +66,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
             page: page.toJSON(),
           });
         })
-        .catch((error: any) => {
+        .catch(error => {
           next(error);
         });
     } else {
@@ -80,13 +79,9 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const checkPagename = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const checkPagename = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { pagename } = req.query;
+    const { pagename } = req.query;
     if (pagename) {
       const countPages = await Page.countDocuments({ pagename: pagename });
       if (countPages > 0) {
@@ -100,21 +95,17 @@ const checkPagename = async (
   }
 };
 
-const savePageInfo = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const savePageInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { uname, bio, pagename, newPagename } = req.body;
+    const { uname, bio, pagename } = req.body;
+    let { newPagename } = req.body;
     newPagename = newPagename.replace(/[^a-z0-9_-]+|\s+/gim, "").toLowerCase();
     const { userPayload } = res.locals;
     const user = await User.findOne({ _id: userPayload._id });
     if (user) {
       if (user.subscription === "none" && newPagename.length < 5) {
         return res.status(401).json({
-          message:
-            "You can't create short name pages without a valid subscription",
+          message: "You can't create short name pages without a valid subscription",
         });
       }
 
@@ -150,7 +141,7 @@ const savePageInfo = async (
 
 const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { badges, pagename } = req.body;
+    const { badges, pagename } = req.body;
     const { userPayload } = res.locals;
 
     if (userPayload) {
@@ -178,13 +169,9 @@ const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const saveSocialMedia = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const saveSocialMedia = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { items, pagename } = req.body;
+    const { items, pagename } = req.body;
     const { userPayload } = res.locals;
 
     if (userPayload) {
@@ -212,11 +199,7 @@ const saveSocialMedia = async (
   }
 };
 
-const uploadAvatar = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const uploadAvatar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { pagename } = req.query;
     const { userPayload } = res.locals;
@@ -226,7 +209,7 @@ const uploadAvatar = async (
       sharp(req.file.path, { pages: -1 })
         .resize(400, 400, { fit: "inside" })
         .webp()
-        .toFile(`${imagePath}/avatar.webp`, async (err, info) => {
+        .toFile(`${imagePath}/avatar.webp`, async err => {
           if (err) {
             logger.error(err, "Error while trying to sharp file");
             return res.status(400).json({
@@ -243,9 +226,7 @@ const uploadAvatar = async (
           const pageSaved = await Page.findOneAndUpdate(
             { userOwner: user, pagename: pagename },
             {
-              pfpUrl: `${
-                config.apiUrl
-              }${imagePath}/avatar.webp?v=${new Date().getTime()}`,
+              pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
             },
             { new: true }
           );
@@ -266,11 +247,7 @@ const uploadAvatar = async (
   }
 };
 
-const uploadBackground = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const uploadBackground = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { pagename } = req.query;
     const { userPayload } = res.locals;
@@ -280,7 +257,7 @@ const uploadBackground = async (
       sharp(req.file.path, { pages: -1 })
         // .resize(1600, 900, { fit: "inside" })
         .webp()
-        .toFile(`${imagePath}/bg.webp`, async (err, info) => {
+        .toFile(`${imagePath}/bg.webp`, async err => {
           if (err) {
             logger.error(err, "Error while trying to sharp file");
             return res.status(400).json({
@@ -297,9 +274,7 @@ const uploadBackground = async (
           const pageSaved = await Page.findOneAndUpdate(
             { userOwner: user, pagename: pagename },
             {
-              backgroundUrl: `${
-                config.apiUrl
-              }${imagePath}/bg.webp?v=${new Date().getTime()}`,
+              backgroundUrl: `${config.apiUrl}${imagePath}/bg.webp?v=${new Date().getTime()}`,
             },
             { new: true }
           );
@@ -320,13 +295,9 @@ const uploadBackground = async (
   }
 };
 
-const updateColors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateColors = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { primaryColor, secondaryColor, fontColor, pagename } = req.body;
+    const { primaryColor, secondaryColor, fontColor, pagename } = req.body;
     const { userPayload } = res.locals;
 
     if (userPayload) {

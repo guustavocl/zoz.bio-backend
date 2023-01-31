@@ -1,5 +1,5 @@
 // import nodemailer from "nodemailer";
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 import confirmEmailTemplate from "./mailTemplates";
 import dotenv from "dotenv";
 dotenv.config();
@@ -7,11 +7,8 @@ dotenv.config();
 const noReplyMail = "noreply@zoz.gg";
 const noReplyPwd = process.env.MAIL_NOREPLY_PWD;
 
-const sendConfirmationMail = async (
-  mailTo: string,
-  confirmUrl = "http://zoz.gg/"
-) => {
-  let transporter = nodemailer.createTransport({
+const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://zoz.gg/") => {
+  const transporter = nodemailer.createTransport({
     host: "smtp.hostinger.com",
     port: 465,
     secure: true,
