@@ -17,7 +17,6 @@ FROM alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
 
-COPY --from=builder /app/images ./images
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/node_modules ./node_modules
@@ -25,7 +24,7 @@ COPY --from=builder /app/package.json ./package.json
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 expressjs
-RUN chown -R expressjs:nodejs /app/build
+RUN chown -R expressjs:nodejs /app
 USER expressjs
 EXPOSE 3000
 CMD ["yarn", "start"]
