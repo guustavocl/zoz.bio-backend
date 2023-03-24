@@ -17,6 +17,8 @@ FROM alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
 
+VOLUME /var/www/api.zoz.gg/uploads:/app/uploads
+
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/node_modules ./node_modules
@@ -29,5 +31,5 @@ USER expressjs
 EXPOSE 3000
 CMD ["yarn", "start"]
 
-# create image with this command: sudo docker build . -t api-zoz.gg-image
-# run container with this command: sudo docker run -d --name api-zoz.gg --network npm api-zoz.gg-image
+# create image with this command: sudo docker build . -t api.zoz.gg-image
+# run container with this command: sudo docker run -d --name api.zoz.gg --network npm api.zoz.gg-image
