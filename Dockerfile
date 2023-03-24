@@ -17,7 +17,7 @@ FROM alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
 
-VOLUME /var/www/api.zoz.gg/uploads:/app/uploads
+VOLUME /var/www/api.zoz.gg/images:/app/images
 
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/.env ./.env
