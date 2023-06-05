@@ -2,25 +2,39 @@ import { NextFunction, Request, Response } from "express";
 import { generateAccessToken } from "../middleware/auth";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+dotenv.config();
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email: email });
+    const loginIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+    const user = await User.findOneAndUpdate(
+      { email: email },
+      { $inc: { loginCount: 1 }, lastLoginIP: loginIp, lastLoginDate: new Date() }
+    );
+
     if (user) {
-      if (!user.isEmailConfirmed) {
-        return res.status(401).json({
-          confirmation: true,
-          message: "Your must confirm your email before sign in",
+      if (user.isBanned || user.isBlocked) {
+        return res.status(403).json({
+          message: "Your are banned or blocked, sorry",
         });
       }
-      //TODO latter includes banned user condition
 
       if (bcrypt.compareSync(password, user.password)) {
         const token = generateAccessToken(user);
+        const expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + 1);
+        res.cookie("zoz_auth", token, {
+          secure: process.env.NODE_MODE === "production" ? true : false,
+          httpOnly: true,
+          expires: expireDate,
+          sameSite: "strict",
+        });
+
         return res.status(200).json({
           message: "Login success",
-          token,
+          user,
         });
       }
     }
@@ -33,6 +47,23 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.cookie("zoz_auth", "", {
+      secure: process.env.NODE_MODE === "production" ? true : false,
+      httpOnly: true,
+      expires: new Date(1),
+      sameSite: "strict",
+    });
+    return res.status(200).json({
+      message: "Logout successfull.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   login,
+  logout,
 };

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { config } from "../config/config";
-import Page, { IPage } from "../models/Page";
+import Page, { PageProps } from "../models/Page";
 import User from "../models/User";
 import logger from "../utils/logger";
 import sharp from "sharp";
@@ -59,7 +59,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
         isMod: user.isMod,
       })
         .save()
-        .then(async (page: IPage) => {
+        .then(async (page: PageProps) => {
           logger.info(page.toJSON(), "New Page created");
           return res.status(201).json({
             message: "Page successfully created",

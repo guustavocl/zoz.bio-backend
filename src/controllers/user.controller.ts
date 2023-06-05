@@ -1,17 +1,17 @@
 import { NextFunction, Request, Response } from "express";
-import User, { IUser } from "../models/User";
+import User, { UserProps } from "../models/User";
 import logger from "../utils/logger";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import sendConfirmationMail from "../utils/mailSender";
-import Token, { IToken } from "../models/Token";
+import Token, { TokenProps } from "../models/Token";
 import moment from "moment";
 import Page from "../models/Page";
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email } = req.query;
-    const user = await User.findOne({ email: email });
+    const { userPayload } = res.locals;
+    const user = await User.findOne({ _id: userPayload._id });
     if (user) {
       const pages = await Page.find({ userOwner: user });
       return res.status(200).json({
@@ -35,7 +35,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       password: password,
     })
       .save()
-      .then(async (user: IUser) => {
+      .then(async (user: UserProps) => {
         logger.info(user.toJSON(), "New User created");
         res.status(201).json({
           message: "Successfully registered, please confirm your email to sign in",
@@ -53,7 +53,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const createNewToken = async (user: IUser, type: string): Promise<IToken | null> => {
+const createNewToken = async (user: UserProps, type: string): Promise<TokenProps | null> => {
   const resetToken = crypto.randomBytes(32).toString("hex");
   const hash = await bcrypt.hash(resetToken, bcrypt.genSaltSync(12));
   const token = await new Token({
@@ -69,7 +69,7 @@ const sendConfirmEmail = async (req: Request, res: Response, next: NextFunction)
     const { email } = req.body;
     const user = await User.findOne({ email: email });
     if (user && !user.isEmailConfirmed) {
-      let confirmEmailToken: IToken | null = await Token.findOne({
+      let confirmEmailToken: TokenProps | null = await Token.findOne({
         userOwner: user,
         type: "confirmEmail",
       });
@@ -104,7 +104,7 @@ const confirmEmail = async (req: Request, res: Response, next: NextFunction) => 
     const { email, token } = req.body;
     const user = await User.findOne({ email: email });
     if (user && !user.isEmailConfirmed) {
-      const confirmEmailToken: IToken | null = await Token.findOne({
+      const confirmEmailToken: TokenProps | null = await Token.findOne({
         userOwner: user,
         type: "confirmEmail",
       });

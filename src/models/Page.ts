@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { ILink } from "./Link";
-import { IUser } from "./User";
+import { LinkProps } from "./Link";
+import { UserProps } from "./User";
 
 // export interface IPageLinks {
 //   _id: string;
@@ -14,32 +14,32 @@ import { IUser } from "./User";
 //   links: IPageLinks[];
 // }
 
-export interface IColor {
+export interface ColorProps {
   r: number;
   g: number;
   b: number;
 }
 
-export interface IPageStatus {
+export interface PageStatusProps {
   key: string;
   message: string;
 }
-export interface IPageSocialMedia {
+export interface PageSocialMediaProps {
   username: string;
   key: string;
 }
-export interface IPage extends mongoose.Document {
+export interface PageProps extends mongoose.Document {
   pagename: string;
   uname: string;
-  status: IPageStatus;
+  status: PageStatusProps;
   bio: string;
   pfpUrl: string;
   bannerUrl: string;
   backgroundUrl: string;
   backgroundOpacity: string;
-  primaryColor: IColor;
-  secondaryColor: IColor;
-  userOwner: IUser;
+  primaryColor: ColorProps;
+  secondaryColor: ColorProps;
+  userOwner: UserProps;
   subscription: string;
   isUnderConstruction: boolean;
   isPrivate: boolean;
@@ -48,8 +48,6 @@ export interface IPage extends mongoose.Document {
   isBlocked: boolean;
   isMod: boolean;
   isAdmin: boolean;
-  createdAt: Date;
-  updatedAt: Date;
   adornment: string;
   fontColor: string;
   backgroundSize: string;
@@ -57,11 +55,13 @@ export interface IPage extends mongoose.Document {
   cardBlur: string;
   cardHueRotate: string;
   badges: string[];
-  socialMedias: IPageSocialMedia[];
-  pageLinks: ILink[];
+  socialMedias: PageSocialMediaProps[];
+  pageLinks: LinkProps[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const Page = new mongoose.Schema(
+const PageSchema = new mongoose.Schema(
   {
     pagename: {
       type: String,
@@ -105,9 +105,6 @@ const Page = new mongoose.Schema(
     isBlocked: { type: Boolean, default: false },
     isMod: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-
     adornment: { type: String },
     fontColor: { type: String },
     backgroundSize: { type: String },
@@ -116,7 +113,7 @@ const Page = new mongoose.Schema(
     cardHueRotate: { type: String },
     badges: [{ type: String }],
     socialMedias: [{ key: String, username: String }],
-    pageLinks: { type: Array<ILink> },
+    pageLinks: { type: Array<LinkProps> },
   },
   {
     timestamps: true,
@@ -133,7 +130,7 @@ const Page = new mongoose.Schema(
   }
 );
 
-Page.path("pagename").validate(
+PageSchema.path("pagename").validate(
   async (pagename: string) => {
     console.log("validate pagename");
     const pagesCount = await mongoose.models.Page.countDocuments({
@@ -145,4 +142,4 @@ Page.path("pagename").validate(
   "DUPLICATED"
 );
 
-export default mongoose.model<IPage>("Page", Page);
+export default mongoose.model<PageProps>("Page", PageSchema);

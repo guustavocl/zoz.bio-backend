@@ -23,5 +23,7 @@ export const errorHandler = () => (error: any, req: Request, res: Response) => {
     }
   }
   logger.error(error, new Error("Internal Server Error"));
-  return res.status(500).json({ message: "Internal Server Error" });
+  console.log(req);
+  console.log("req error??");
+  return res?.status(500).json({ message: "Internal Server Error" });
 };

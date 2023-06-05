@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { IPage } from "./Page";
+import { PageProps } from "./Page";
 
-export interface ILink extends mongoose.Document {
+export interface LinkProps extends mongoose.Document {
   url: string;
   label: string;
   icon: string;
@@ -10,13 +10,13 @@ export interface ILink extends mongoose.Document {
   isFolder: boolean;
   position: number;
   timesClicked: number;
+  pageOwner: PageProps;
+  folderOwner: LinkProps;
   createdAt: Date;
   updatedAt: Date;
-  pageOwner: IPage;
-  folderOwner: ILink;
 }
 
-const Link = new mongoose.Schema(
+const LinkSchema = new mongoose.Schema(
   {
     url: {
       type: String,
@@ -39,8 +39,6 @@ const Link = new mongoose.Schema(
     isFolder: { type: Boolean, default: false },
     position: { type: Number },
     timesClicked: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
     folderOwner: { type: mongoose.Schema.Types.ObjectId, ref: "Link" },
     pageOwner: { type: mongoose.Schema.Types.ObjectId, ref: "Page" },
   },
@@ -57,4 +55,4 @@ const Link = new mongoose.Schema(
   }
 );
 
-export default mongoose.model<ILink>("Link", Link);
+export default mongoose.model<LinkProps>("Link", LinkSchema);

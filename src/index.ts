@@ -1,6 +1,5 @@
 import express from "express";
 import http from "http";
-import cors from "cors";
 import timeout from "connect-timeout";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
@@ -14,6 +13,7 @@ import authRoutes from "./routes/auth.routes";
 import pageRoutes from "./routes/page.routes";
 import linkRoutes from "./routes/link.routes";
 import { rateLimiter } from "./middleware/rateLimiter";
+import cookies from "cookie-parser";
 
 const router = express();
 
@@ -32,13 +32,14 @@ const runServer = () => {
   router.use(timeout("30s"));
   router.use(bodyParser.json({ limit: "10mb" }));
   router.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-  router.use(cors());
+  // router.use(cors());
 
   /* LOGGER */
   router.use(reqLogger());
 
-  /* RULES */
+  /* RULES & COOKIES */
   router.use(rules());
+  router.use(cookies());
 
   /* RATE LIMITER */
   router.use(rateLimiter());
@@ -52,6 +53,9 @@ const runServer = () => {
 
   /* CHECK */
   router.get("/ping", (req, res) => res.status(200).json({ message: "pong" }));
+
+  /*  NOT FOUND */
+  router.get("*", (req, res) => res.status(404).json({ message: "Not Found" }));
 
   /* ERROR HANDLING */
   router.use(errorHandler());

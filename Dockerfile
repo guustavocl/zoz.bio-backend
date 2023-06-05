@@ -30,4 +30,4 @@ EXPOSE 3000
 CMD ["yarn", "start"]
 
 # create image with this command: sudo docker build . -t api.zoz.gg-image
-# run container with this command: sudo docker run -d --name api.zoz.gg --network npm api.zoz.gg-image
+# run container with this command: sudo docker run -d --name api.zoz.gg -v /var/www/api.zoz.gg/images:/app/images --network npm api.zoz.gg-image

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import Link, { ILink } from "../models/Link";
+import Link, { LinkProps } from "../models/Link";
 import Page from "../models/Page";
 import logger from "../utils/logger";
 
@@ -55,7 +55,7 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
           position: countLinks + 1,
         })
           .save()
-          .then(async (saved: ILink) => {
+          .then(async (saved: LinkProps) => {
             return saved;
           })
           .catch(error => {
@@ -86,7 +86,7 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
           position: countLinks + 1,
         })
           .save()
-          .then(async (saved: ILink) => {
+          .then(async (saved: LinkProps) => {
             return saved;
           })
           .catch(error => {

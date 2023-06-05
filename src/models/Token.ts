@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
-import { IUser } from "./User";
+import { UserProps } from "./User";
 
-export interface IToken extends mongoose.Document {
+export interface TokenProps extends mongoose.Document {
   hash: string;
   type: "confirmEmail" | "resetPwd";
-  userOwner: IUser;
+  userOwner: UserProps;
+  expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const Token = new mongoose.Schema(
+const TokenSchema = new mongoose.Schema(
   {
     hash: { type: String, required: true },
     type: {
@@ -22,8 +23,6 @@ const Token = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
     expiresAt: { type: Date, default: Date.now, expires: 3600 }, //3600 = 1hour
   },
   {
@@ -31,4 +30,4 @@ const Token = new mongoose.Schema(
   }
 );
 
-export default mongoose.model<IToken>("Token", Token);
+export default mongoose.model<TokenProps>("Token", TokenSchema);

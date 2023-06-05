@@ -27,9 +27,9 @@ export const config = {
     url: getMongoUrl(process.env.NODE_MODE),
   },
   server: {
-    port: process.env.NODE_MODE === "prod" ? 3000 : 3100,
+    port: process.env.NODE_MODE === "production" ? 3000 : 3100,
   },
-  apiUrl: process.env.NODE_MODE === "prod" ? "https://api.zoz.gg/" : "http://127.0.0.1:3100/",
+  apiUrl: process.env.NODE_MODE === "production" ? "https://api.zoz.gg/" : "http://127.0.0.1:3100/",
 };
 
 // example url: mongodb://user:passwd@host:27117/zoz?authSource=admin

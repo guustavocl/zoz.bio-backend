@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-export interface IUser extends mongoose.Document {
+export interface UserProps extends mongoose.Document {
   uname: string;
   email: string;
   password: string;
@@ -19,7 +19,7 @@ export interface IUser extends mongoose.Document {
   updatedAt: Date;
 }
 
-const User = new mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     uname: {
       type: String,
@@ -53,8 +53,6 @@ const User = new mongoose.Schema(
     isBlocked: { type: Boolean, default: false },
     isMod: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,
@@ -72,7 +70,7 @@ const User = new mongoose.Schema(
   }
 );
 
-User.pre("save", async function (next) {
+UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
@@ -81,7 +79,7 @@ User.pre("save", async function (next) {
   next();
 });
 
-User.path("email").validate(
+UserSchema.path("email").validate(
   async (email: string) => {
     const emailRegex = new RegExp("[a-zA-Z0-9]+@[a-zA-Z0-9]+.[a-zA-Z]{2,3}");
     return emailRegex.test(email);
@@ -89,7 +87,7 @@ User.path("email").validate(
   "This email is invalid",
   "INVALID"
 );
-User.path("email").validate(
+UserSchema.path("email").validate(
   async (email: string) => {
     const emailCount = await mongoose.models.User.countDocuments({ email });
     return !emailCount;
@@ -98,4 +96,4 @@ User.path("email").validate(
   "DUPLICATED"
 );
 
-export default mongoose.model<IUser>("User", User);
+export default mongoose.model<UserProps>("User", UserSchema);
