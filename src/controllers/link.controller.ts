@@ -109,15 +109,11 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
             page: pageSaved.toJSON(),
           });
         }
-        res.status(404).json({
-          message: "Something went wrong D:",
-        });
       }
-    } else {
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
     }
+    return res.status(400).json({
+      message: "Something went wrong D:",
+    });
   } catch (error) {
     next(error);
   }

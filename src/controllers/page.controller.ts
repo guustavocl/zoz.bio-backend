@@ -31,21 +31,24 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
     if (user) {
       const countPages = await Page.countDocuments({ userOwner: user._id });
 
+      if (pagename.length <= 1) {
+        return res.status(403).json({
+          message: "You can't use this pagename",
+        });
+      }
+      if (!user.isEmailConfirmed && countPages >= 1) {
+        return res.status(403).json({
+          message: "You must confirm your email to create more pages",
+        });
+      }
       if (user.subscription === "none" && countPages >= 2) {
-        return res.status(401).json({
+        return res.status(403).json({
           message: "You can't create more pages without a valid subscription",
         });
       }
-
-      if (user.subscription === "none" && pagename.length < 5) {
-        return res.status(401).json({
+      if (user.subscription === "none" && pagename.length < 4) {
+        return res.status(403).json({
           message: "You can't create short name pages without a valid subscription",
-        });
-      }
-
-      if (pagename.length <= 1) {
-        return res.status(401).json({
-          message: "You can't use this pagename",
         });
       }
 
@@ -70,7 +73,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
           next(error);
         });
     } else {
-      res.status(404).json({
+      res.status(400).json({
         message: "Something went wrong D:",
       });
     }
@@ -103,15 +106,14 @@ const savePageInfo = async (req: Request, res: Response, next: NextFunction) => 
     const { userPayload } = res.locals;
     const user = await User.findOne({ _id: userPayload._id });
     if (user) {
-      if (user.subscription === "none" && newPagename.length < 5) {
-        return res.status(401).json({
-          message: "You can't create short name pages without a valid subscription",
+      if (newPagename.length <= 1) {
+        return res.status(403).json({
+          message: "You can't use this pagename",
         });
       }
-
-      if (newPagename.length <= 1) {
-        return res.status(401).json({
-          message: "You can't use this pagename",
+      if (user.subscription === "none" && newPagename.length < 4) {
+        return res.status(403).json({
+          message: "You can't create short name pages without a valid subscription",
         });
       }
 
@@ -126,14 +128,10 @@ const savePageInfo = async (req: Request, res: Response, next: NextFunction) => 
           page: pageSaved.toJSON(),
         });
       }
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
-    } else {
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
     }
+    return res.status(400).json({
+      message: "Something went wrong D:",
+    });
   } catch (error) {
     next(error);
   }
@@ -156,14 +154,10 @@ const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
           page: pageSaved.toJSON(),
         });
       }
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
-    } else {
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
     }
+    return res.status(400).json({
+      message: "Something went wrong D:",
+    });
   } catch (error) {
     next(error);
   }
@@ -186,14 +180,10 @@ const saveSocialMedia = async (req: Request, res: Response, next: NextFunction) 
           page: pageSaved.toJSON(),
         });
       }
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
-    } else {
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
     }
+    res.status(400).json({
+      message: "Something went wrong D:",
+    });
   } catch (error) {
     next(error);
   }
@@ -312,14 +302,10 @@ const updateColors = async (req: Request, res: Response, next: NextFunction) => 
           page: pageSaved.toJSON(),
         });
       }
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
-    } else {
-      res.status(404).json({
-        message: "Something went wrong D:",
-      });
     }
+    res.status(400).json({
+      message: "Something went wrong D:",
+    });
   } catch (error) {
     next(error);
   }
