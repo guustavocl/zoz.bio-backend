@@ -2,14 +2,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const list: { [key: string]: any } = {
-  prod: {
+  production: {
     host: process.env.PROD_MONGO_HOST,
     port: process.env.PROD_MONGO_PORT,
     db: process.env.PROD_MONGO_DB || "",
     username: process.env.PROD_MONGO_USERNAME,
     password: process.env.PROD_MONGO_PASSWORD,
   },
-  dev: {
+  development: {
     host: process.env.DEV_MONGO_HOST,
     port: process.env.DEV_MONGO_PORT,
     db: process.env.DEV_MONGO_DB || "",
@@ -18,7 +18,7 @@ const list: { [key: string]: any } = {
   },
 };
 
-const getMongoUrl = (mode = "dev") => {
+const getMongoUrl = (mode = "development") => {
   return `mongodb://${list[mode].username}:${list[mode].password}@${list[mode].host}:${list[mode].port}/${list[mode].db}?authSource=admin`;
 };
 
