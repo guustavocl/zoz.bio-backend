@@ -4,10 +4,10 @@ import confirmEmailTemplate from "./mailTemplates";
 import dotenv from "dotenv";
 dotenv.config();
 
-const noReplyMail = "noreply@zoz.gg";
+const noReplyMail = "noreply@zoz.bio";
 const noReplyPwd = process.env.MAIL_NOREPLY_PWD;
 
-const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://zoz.gg/") => {
+const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://zoz.bio/") => {
   const transporter = nodemailer.createTransport({
     host: "smtp.hostinger.com",
     port: 465,
@@ -19,12 +19,12 @@ const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://zoz.gg/
   });
 
   await transporter.sendMail({
-    from: '"ZOZ.gg" <noreply@zoz.gg>',
+    from: '"zoz.bio" <noreply@zoz.bio>',
     to: mailTo,
     subject: "Thanks for join us ✔",
     text: `Confirm Your Email Address
             Enter the following link to confirm your email address. ${confirmUrl} |
-            If you didn't create an account with ZOZ.gg, you can safely delete this email.`,
+            If you didn't create an account with zoz.bio, you can safely delete this email.`,
     html: confirmEmailTemplate(confirmUrl), // html body
   });
 };

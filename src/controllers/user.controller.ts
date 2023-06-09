@@ -43,7 +43,10 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
         const confirmEmailToken = await createNewToken(user, "confirmEmail");
         if (confirmEmailToken)
-          sendConfirmationMail(user.email, `http://zoz.gg/confirm?email=${user.email}&token=${confirmEmailToken.hash}`);
+          sendConfirmationMail(
+            user.email,
+            `http://zoz.bio/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
+          );
       })
       .catch(error => {
         next(error);
@@ -76,10 +79,13 @@ const sendConfirmEmail = async (req: Request, res: Response, next: NextFunction)
       if (!confirmEmailToken) {
         confirmEmailToken = await createNewToken(user, "confirmEmail");
         if (confirmEmailToken)
-          sendConfirmationMail(user.email, `http://zoz.gg/confirm?email=${user.email}&token=${confirmEmailToken.hash}`);
+          sendConfirmationMail(
+            user.email,
+            `http://zoz.bio/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
+          );
       }
       if (confirmEmailToken && moment().diff(confirmEmailToken.createdAt, "minutes") > 1) {
-        sendConfirmationMail(user.email, `http://zoz.gg/confirm?email=${user.email}&token=${confirmEmailToken.hash}`);
+        sendConfirmationMail(user.email, `http://zoz.bio/confirm?email=${user.email}&token=${confirmEmailToken.hash}`);
       }
     }
 

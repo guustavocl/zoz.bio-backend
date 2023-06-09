@@ -131,7 +131,7 @@ const confirmEmailTemplate = (confirmUrl: string) => {
                 <tr>
                   <td align="center" valign="top" style="padding: 36px 24px">
                     <a
-                      href="http://zoz.gg"
+                      href="http://zoz.bio"
                       target="_blank"
                       style="display: inline-block"
                     >
@@ -231,7 +231,7 @@ const confirmEmailTemplate = (confirmUrl: string) => {
                     <p style="margin: 0">
                       Tap the button below to confirm your email address. If you
                       didn't create an account with
-                      <a target="_blank" href="http://zoz.gg">ZOZ.gg</a>, you can
+                      <a target="_blank" href="http://zoz.bio">zoz.bio</a>, you can
                       safely delete this email.
                     </p>
                   </td>
@@ -310,7 +310,7 @@ const confirmEmailTemplate = (confirmUrl: string) => {
                   >
                     <p style="margin: 0">
                       Cheers,<br />
-                      <a target="_blank" href="http://zoz.gg/gustavo"
+                      <a target="_blank" href="http://zoz.bio/gustavo"
                         >@Gustavo</a
                       >
                     </p>

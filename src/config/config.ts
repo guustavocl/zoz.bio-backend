@@ -29,7 +29,7 @@ export const config = {
   server: {
     port: process.env.NODE_MODE === "production" ? 3000 : 3100,
   },
-  apiUrl: process.env.NODE_MODE === "production" ? "https://api.zoz.gg/" : "http://127.0.0.1:3100/",
+  apiUrl: process.env.NODE_MODE === "production" ? "https://api.zoz.bio/" : "http://127.0.0.1:3100/",
 };
 
 // example url: mongodb://user:passwd@host:27117/zoz?authSource=admin
