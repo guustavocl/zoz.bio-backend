@@ -31,4 +31,4 @@ EXPOSE 443
 CMD ["yarn", "start"]
 
 # create image with this command: sudo docker build . -t api.zoz.bio-image
-# run container with this command: sudo docker run -d --name api.zoz.bio -v /var/www/api.zoz.bio/images:/app/images --network npm --ip 172.18.0.99 api.zoz.bio-image
+# run container with this command: sudo docker run -d --name api.zoz.bio -v /var/www/api.zoz.bio/images:/app/images --network host api.zoz.bio-image
