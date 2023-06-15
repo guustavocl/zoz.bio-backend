@@ -18,7 +18,7 @@ import cookies from "cookie-parser";
 const router = express();
 
 mongoose
-  .connect(config.mongo.url, { retryWrites: true })
+  .connect(config.mongoUrl, { retryWrites: true })
   .then(() => {
     logger.info("Mongoose successfully connected!");
     runServer();
@@ -60,7 +60,5 @@ const runServer = () => {
   /* ERROR HANDLING */
   router.use(errorHandler());
 
-  http
-    .createServer(router)
-    .listen(config.server.port, () => logger.info(`Server running on port ${config.server.port}`));
+  http.createServer(router).listen(config.serverPort, () => logger.info(`Server running on port ${config.serverPort}`));
 };
