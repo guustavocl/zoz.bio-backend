@@ -23,7 +23,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 USER gust
-RUN chown -R gust /app
+# RUN chown -R gust /app
 EXPOSE 3000
 EXPOSE 443
 CMD ["yarn", "start"]
