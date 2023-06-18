@@ -64,7 +64,7 @@ const UserSchema = new mongoose.Schema(
         delete returnedObject.loginCount;
         delete returnedObject.updatedAt;
         delete returnedObject.createdAt;
-        delete returnedObject.isEmailConfirmed;
+        delete returnedObject.lastLoginIP;
       },
     },
   }

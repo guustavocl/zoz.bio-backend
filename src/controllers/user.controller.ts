@@ -13,7 +13,7 @@ const getUser = async (req: Request, res: Response, next: NextFunction) => {
     const { userPayload } = res.locals;
     const user = await User.findOne({ _id: userPayload._id });
     if (user) {
-      const pages = await Page.find({ userOwner: user });
+      const pages = await Page.find({ userOwner: user }).select({ pagename: 1, uname: 1, pfpUrl: 1 });
       return res.status(200).json({
         user: user.toJSON(),
         pages: pages,
