@@ -22,8 +22,10 @@ COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-USER gust
-# RUN chown -R gust /app
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 expressjs
+RUN chown -R expressjs:nodejs /app
+USER expressjs
 EXPOSE 3000
 EXPOSE 443
 CMD ["yarn", "start"]
