@@ -21,6 +21,25 @@ const getPage = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const getEditPage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { pagename } = req.query;
+    const { userPayload } = res.locals;
+
+    if (userPayload && pagename) {
+      const page = await Page.findOne({
+        userOwner: userPayload._id,
+        pagename: pagename.toString().toLowerCase(),
+      });
+      if (page) return res.status(200).json({ page: page.toJSON() });
+    }
+
+    res.status(404).json({ message: "Page not found!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createPage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let { pagename } = req.body;
@@ -313,6 +332,7 @@ const updateColors = async (req: Request, res: Response, next: NextFunction) => 
 
 export default {
   getPage,
+  getEditPage,
   createPage,
   checkPagename,
   savePageInfo,

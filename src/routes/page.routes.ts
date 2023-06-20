@@ -7,6 +7,8 @@ import { uploadAvatar, uploadBackground } from "../middleware/uploadFile";
 const router = express.Router();
 
 router.get("/", pageController.getPage);
+router.get("/edit", authenticateToken(), pageController.getEditPage);
+
 router.post(
   "/create",
   rateLimiterHour(30, "You cant create more pages for now", true),
