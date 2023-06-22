@@ -29,6 +29,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
           secure: process.env.NODE_MODE === "production" ? true : false,
           httpOnly: true,
           expires: expireDate,
+          sameSite: process.env.NODE_MODE === "production" ? "none" : "strict",
         });
 
         return res.status(200).json({
