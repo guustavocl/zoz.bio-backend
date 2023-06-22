@@ -51,10 +51,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.cookie("zoz_auth", "", {
-      // secure: process.env.NODE_MODE === "production" ? true : false,
-      secure: false,
+      secure: process.env.NODE_MODE === "production" ? false : false,
       httpOnly: true,
       expires: new Date(1),
+      sameSite: "strict",
+      domain: process.env.NODE_MODE === "production" ? "zoz.bio" : "127.0.0.1",
     });
     return res.status(200).json({
       message: "Logout successfull.",
