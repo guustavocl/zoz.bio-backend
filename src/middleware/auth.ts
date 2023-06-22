@@ -20,16 +20,16 @@ export const authenticateToken = () => (req: Request, res: Response, next: NextF
       if (!user || user.isBanned || user.isBlocked) return res.sendStatus(403);
       res.locals.userPayload = user;
 
-      const token = generateAccessToken(user);
-      const expireDate = new Date();
-      expireDate.setDate(expireDate.getDate() + 1);
+      // const token = generateAccessToken(user);
+      // const expireDate = new Date();
+      // expireDate.setDate(expireDate.getDate() + 1);
       console.log("here");
-      res.cookie("zoz_auth", token, {
-        // secure: process.env.NODE_MODE === "production" ? true : false,
-        secure: false,
-        httpOnly: true,
-        expires: expireDate,
-      });
+      // res.cookie("zoz_auth", token, {
+      //   // secure: process.env.NODE_MODE === "production" ? true : false,
+      //   secure: false,
+      //   httpOnly: true,
+      //   expires: expireDate,
+      // });
     }
     next();
   });
