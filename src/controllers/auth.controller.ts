@@ -25,14 +25,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         const token = generateAccessToken(user);
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + 1);
-        console.log(process.env.NODE_MODE);
         res.cookie("zoz_auth", token, {
-          // secure: process.env.NODE_MODE === "production" ? false : false,
-          secure: false,
-          httpOnly: false,
-          // expires: expireDate,
-          // sameSite: process.env.NODE_MODE === "production" ? "none" : "strict",
-          sameSite: "lax",
+          secure: process.env.NODE_MODE === "production" ? false : false,
+          httpOnly: true,
+          expires: expireDate,
+          sameSite: "strict",
           domain: process.env.NODE_MODE === "production" ? "zoz.bio" : "127.0.0.1",
         });
 

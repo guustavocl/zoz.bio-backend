@@ -6,10 +6,7 @@ dotenv.config();
 const secret = process.env.TOKEN_SECRET || "";
 
 export const authenticateToken = () => (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.cookies);
   const token = req.cookies["zoz_auth"];
-  const loginIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
-  console.log(loginIp);
   if (token == null) return res.sendStatus(401);
 
   jwt.verify(token, secret, {}, async (err: Error | null, payload: string | jwt.JwtPayload | undefined) => {
@@ -20,16 +17,16 @@ export const authenticateToken = () => (req: Request, res: Response, next: NextF
       if (!user || user.isBanned || user.isBlocked) return res.sendStatus(403);
       res.locals.userPayload = user;
 
-      // const token = generateAccessToken(user);
-      // const expireDate = new Date();
-      // expireDate.setDate(expireDate.getDate() + 1);
-      console.log("here");
-      // res.cookie("zoz_auth", token, {
-      //   // secure: process.env.NODE_MODE === "production" ? true : false,
-      //   secure: false,
-      //   httpOnly: true,
-      //   expires: expireDate,
-      // });
+      const token = generateAccessToken(user);
+      const expireDate = new Date();
+      expireDate.setDate(expireDate.getDate() + 1);
+      res.cookie("zoz_auth", token, {
+        secure: process.env.NODE_MODE === "production" ? false : false,
+        httpOnly: true,
+        expires: expireDate,
+        sameSite: "strict",
+        domain: process.env.NODE_MODE === "production" ? "zoz.bio" : "127.0.0.1",
+      });
     }
     next();
   });
