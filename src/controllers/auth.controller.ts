@@ -33,6 +33,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
           // expires: expireDate,
           // sameSite: process.env.NODE_MODE === "production" ? "none" : "strict",
           sameSite: "lax",
+          domain: process.env.NODE_MODE === "production" ? "https://zoz.bio" : "http://127.0.0.1",
         });
 
         return res.status(200).json({
