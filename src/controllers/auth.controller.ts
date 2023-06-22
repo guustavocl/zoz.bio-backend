@@ -26,11 +26,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + 1);
         res.cookie("zoz_auth", token, {
-          // secure: process.env.NODE_MODE === "production" ? true : false,
-          secure: false,
+          secure: process.env.NODE_MODE === "production" ? true : false,
           httpOnly: true,
           expires: expireDate,
-          sameSite: "strict",
         });
 
         return res.status(200).json({
@@ -54,7 +52,6 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
       secure: process.env.NODE_MODE === "production" ? true : false,
       httpOnly: true,
       expires: new Date(1),
-      sameSite: "strict",
     });
     return res.status(200).json({
       message: "Logout successfull.",

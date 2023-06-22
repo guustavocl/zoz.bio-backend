@@ -23,11 +23,9 @@ export const authenticateToken = () => (req: Request, res: Response, next: NextF
       expireDate.setDate(expireDate.getDate() + 1);
       console.log("here");
       res.cookie("zoz_auth", token, {
-        // secure: process.env.NODE_MODE === "production" ? true : false,
-        secure: false,
+        secure: process.env.NODE_MODE === "production" ? true : false,
         httpOnly: true,
         expires: expireDate,
-        sameSite: "strict",
       });
     }
     next();
