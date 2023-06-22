@@ -49,7 +49,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.cookie("zoz_auth", "", {
-      secure: process.env.NODE_MODE === "production" ? true : false,
+      // secure: process.env.NODE_MODE === "production" ? true : false,
+      secure: false,
       httpOnly: true,
       expires: new Date(1),
     });

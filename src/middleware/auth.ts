@@ -8,6 +8,8 @@ const secret = process.env.TOKEN_SECRET || "";
 export const authenticateToken = () => (req: Request, res: Response, next: NextFunction) => {
   console.log(req.cookies);
   const token = req.cookies["zoz_auth"];
+  const loginIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+  console.log(loginIp);
   if (token == null) return res.sendStatus(401);
 
   jwt.verify(token, secret, {}, async (err: Error | null, payload: string | jwt.JwtPayload | undefined) => {
@@ -23,7 +25,8 @@ export const authenticateToken = () => (req: Request, res: Response, next: NextF
       expireDate.setDate(expireDate.getDate() + 1);
       console.log("here");
       res.cookie("zoz_auth", token, {
-        secure: process.env.NODE_MODE === "production" ? true : false,
+        // secure: process.env.NODE_MODE === "production" ? true : false,
+        secure: false,
         httpOnly: true,
         expires: expireDate,
       });
