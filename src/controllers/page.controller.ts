@@ -79,6 +79,7 @@ const createPage = async (req: Request, res: Response, next: NextFunction) => {
         uname: user.uname.substring(0, 24),
         isAdmin: user.isAdmin,
         isMod: user.isMod,
+        badges: ["welcome", "new", "zoz", "member"],
       })
         .save()
         .then(async (page: PageProps) => {

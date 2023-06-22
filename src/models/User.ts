@@ -45,9 +45,10 @@ const UserSchema = new mongoose.Schema(
     subscriptionUntil: { type: Date },
     subscription: {
       type: String,
-      enum: ["vip", "partner", "member", "org", "none"],
+      enum: ["mod", "vip", "partner", "member", "org", "pix", "gift", "none"],
       default: "none",
     },
+    isSubscriptionLifetime: { type: Boolean, default: false },
     isEmailConfirmed: { type: Boolean, default: false },
     isBanned: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
@@ -74,7 +75,7 @@ UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-  const hash = await bcrypt.hash(this.password, bcrypt.genSaltSync(12));
+  const hash = await bcrypt.hash(this.password || "", bcrypt.genSaltSync(12));
   this.password = hash;
   next();
 });

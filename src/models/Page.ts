@@ -92,7 +92,7 @@ const PageSchema = new mongoose.Schema(
     },
     subscription: {
       type: String,
-      enum: ["vip", "partner", "member", "org", "none"],
+      enum: ["mod", "vip", "partner", "member", "org", "pix", "gift", "none"],
       default: "none",
     },
     isUnderConstruction: { type: Boolean, default: false },
