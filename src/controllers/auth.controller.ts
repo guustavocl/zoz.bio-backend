@@ -29,7 +29,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         res.cookie("zoz_auth", token, {
           secure: process.env.NODE_MODE === "production" ? true : false,
           httpOnly: false,
-          expires: expireDate,
+          // expires: expireDate,
           // sameSite: process.env.NODE_MODE === "production" ? "none" : "strict",
           sameSite: "lax",
         });
