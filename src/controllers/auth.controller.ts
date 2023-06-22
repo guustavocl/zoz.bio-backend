@@ -26,7 +26,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + 1);
         res.cookie("zoz_auth", token, {
-          secure: process.env.NODE_MODE === "production" ? true : false,
+          // secure: process.env.NODE_MODE === "production" ? true : false,
+          secure: false,
           httpOnly: true,
           expires: expireDate,
           sameSite: "strict",
