@@ -6,6 +6,7 @@ dotenv.config();
 const secret = process.env.TOKEN_SECRET || "";
 
 export const authenticateToken = () => (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.cookies);
   const token = req.cookies["zoz_auth"];
   if (token == null) return res.sendStatus(401);
 
