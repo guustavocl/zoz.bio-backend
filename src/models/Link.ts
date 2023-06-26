@@ -6,6 +6,7 @@ export interface LinkProps extends mongoose.Document {
   label: string;
   icon: string;
   embedded: string;
+  isPlaylist: boolean;
   isHidden: boolean;
   isFolder: boolean;
   position: number;
@@ -14,6 +15,7 @@ export interface LinkProps extends mongoose.Document {
   folderOwner: LinkProps;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date;
 }
 
 const LinkSchema = new mongoose.Schema(
@@ -35,12 +37,14 @@ const LinkSchema = new mongoose.Schema(
       enum: ["none", "spotify", "soundcloud", "youtube"],
       default: "none",
     },
+    isPlaylist: { type: Boolean, default: false },
     isHidden: { type: Boolean, default: false },
     isFolder: { type: Boolean, default: false },
     position: { type: Number },
     timesClicked: { type: Number, default: 0 },
     folderOwner: { type: mongoose.Schema.Types.ObjectId, ref: "Link" },
     pageOwner: { type: mongoose.Schema.Types.ObjectId, ref: "Page" },
+    deletedAt: { type: Date },
   },
   {
     timestamps: true,

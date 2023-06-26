@@ -139,13 +139,11 @@ const savePageInfo = async (req: Request, res: Response, next: NextFunction) => 
 
       const pageSaved = await Page.findOneAndUpdate(
         { userOwner: userPayload._id, pagename: pagename },
-        { uname, bio, pagename: newPagename },
-        { new: true }
+        { uname, bio, pagename: newPagename }
       );
       if (pageSaved) {
         return res.status(201).json({
           message: "Page successfully saved",
-          page: pageSaved.toJSON(),
         });
       }
     }
@@ -163,15 +161,10 @@ const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
     const { userPayload } = res.locals;
 
     if (userPayload) {
-      const pageSaved = await Page.findOneAndUpdate(
-        { userOwner: userPayload._id, pagename: pagename },
-        { badges },
-        { new: true }
-      );
+      const pageSaved = await Page.findOneAndUpdate({ userOwner: userPayload._id, pagename: pagename }, { badges });
       if (pageSaved) {
         return res.status(201).json({
           message: "Page successfully saved",
-          page: pageSaved.toJSON(),
         });
       }
     }
@@ -191,13 +184,11 @@ const saveSocialMedia = async (req: Request, res: Response, next: NextFunction) 
     if (userPayload) {
       const pageSaved = await Page.findOneAndUpdate(
         { userOwner: userPayload._id, pagename: pagename },
-        { socialMedias: items },
-        { new: true }
+        { socialMedias: items }
       );
       if (pageSaved) {
         return res.status(201).json({
           message: "Page successfully saved",
-          page: pageSaved.toJSON(),
         });
       }
     }
@@ -237,13 +228,11 @@ const uploadAvatar = async (req: Request, res: Response, next: NextFunction) => 
             { userOwner: user, pagename: pagename },
             {
               pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
-            },
-            { new: true }
+            }
           );
           if (pageSaved) {
             return res.status(200).json({
               message: "Avatar successfully saved",
-              page: pageSaved.toJSON(),
             });
           }
         });
@@ -285,13 +274,11 @@ const uploadBackground = async (req: Request, res: Response, next: NextFunction)
             { userOwner: user, pagename: pagename },
             {
               backgroundUrl: `${config.apiUrl}${imagePath}/bg.webp?v=${new Date().getTime()}`,
-            },
-            { new: true }
+            }
           );
           if (pageSaved) {
             return res.status(200).json({
               message: "Background successfully saved",
-              page: pageSaved.toJSON(),
             });
           }
         });
@@ -313,13 +300,11 @@ const updateColors = async (req: Request, res: Response, next: NextFunction) => 
     if (userPayload) {
       const pageSaved = await Page.findOneAndUpdate(
         { userOwner: userPayload._id, pagename: pagename },
-        { primaryColor, secondaryColor, fontColor },
-        { new: true }
+        { primaryColor, secondaryColor, fontColor }
       );
       if (pageSaved) {
         return res.status(201).json({
           message: "Color successfully saved",
-          page: pageSaved.toJSON(),
         });
       }
     }

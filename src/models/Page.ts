@@ -132,7 +132,6 @@ const PageSchema = new mongoose.Schema(
 
 PageSchema.path("pagename").validate(
   async (pagename: string) => {
-    console.log("validate pagename");
     const pagesCount = await mongoose.models.Page.countDocuments({
       pagename: { $regex: new RegExp(`^${pagename}$`, "i") },
     });

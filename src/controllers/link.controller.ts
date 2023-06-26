@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import Link, { LinkProps } from "../models/Link";
 import Page from "../models/Page";
-import logger from "../utils/logger";
 
 const getFolders = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -34,79 +33,61 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
     const { userPayload } = res.locals;
 
     const page = await Page.findOne({
-      userOwner: userPayload ? userPayload._id : null,
+      userOwner: userPayload?._id || null,
       pagename: pagename,
     });
 
-    if (userPayload && page) {
-      let newLink;
+    if (userPayload && page && link) {
       const countLinks = await Link.countDocuments({
         pageOwner: page,
-        folderOnwer: link.folderOnwer ? link.folderOnwer : null,
+        folderOnwer: link?.folderOnwer || null,
       });
-
-      if (link.isFolder) {
-        newLink = await new Link({
-          label: link.label, //TODO can filter label here later for bad words
-          icon: link.icon ? link.icon : "folder",
-          embedded: "none",
-          isFolder: true,
-          pageOwner: page,
-          position: countLinks + 1,
-        })
-          .save()
-          .then(async (saved: LinkProps) => {
-            return saved;
-          })
-          .catch(error => {
-            next(error);
-          });
-      } else {
-        //TODO check total links and folder max free created is 10
-        let url = link.url;
-        if (link.embedded !== "none") {
-          if (link.embedded === "spotify") {
-            const urlArray = url.split("/").reverse();
-            url = urlArray[0];
-          } else if (link.embedded === "soundcloud") {
-            url = url.replace("https://soundcloud.com", "");
-          } else {
-            const urlArray = url.split("=").reverse();
-            url = urlArray[0];
-          }
+      //
+      let url = link.url;
+      let isPlaylist = false;
+      if (link.embedded !== "none") {
+        if (link.embedded === "spotify") {
+          isPlaylist = link.url.includes("playlist");
+          const urlArray = url.split("/").reverse();
+          url = `${isPlaylist ? "playlist/" : "track/"}${urlArray[0]}`;
+        } else if (link.embedded === "soundcloud") {
+          url = url.replace("https://soundcloud.com", "");
+        } else {
+          const urlArray = url.split("=").reverse();
+          url = urlArray[0];
         }
-
-        newLink = await new Link({
-          url: url, //TODO validade safe urls here later
-          label: link.label, //TODO can filter label here later for bad words
-          icon: link.icon ? link.icon : "link",
-          embedded: link.embedded,
-          pageOwner: page,
-          folderOwner: link.folderOwner ? link.folderOwner : null,
-          position: countLinks + 1,
-        })
-          .save()
-          .then(async (saved: LinkProps) => {
-            return saved;
-          })
-          .catch(error => {
-            next(error);
-          });
       }
+      const newLink = await new Link({
+        url: url,
+        label: link.label, //TODO can filter label here later for bad words
+        embedded: !link.isFolder ? link.embedded : "none",
+        isFolder: link.isFolder,
+        icon: link.isFolder ? "folder" : "link",
+        pageOwner: page,
+        position: countLinks + 1,
+        isPlaylist: isPlaylist,
+        folderOwner: !link.isFolder && link?.folderOwner ? link.folderOwner : undefined,
+      })
+        .save()
+        .then(async (saved: LinkProps) => {
+          return saved;
+        })
+        .catch(error => {
+          next(error);
+        });
 
       if (newLink) {
-        logger.info(newLink.toJSON(), "New Link created");
-        const allLinks = await Link.find({ pageOwner: page });
-
+        const allLinks = await Link.find(
+          { pageOwner: page, deletedAt: null },
+          { timesClicked: 0, deletedAt: 0, __v: 0, pageOwner: 0 }
+        );
         const pageSaved = await Page.findOneAndUpdate(
           { userOwner: userPayload._id, pagename: pagename },
-          { pageLinks: allLinks },
-          { new: true }
+          { pageLinks: allLinks }
         );
         if (pageSaved) {
           return res.status(201).json({
             message: "Link successfully saved",
-            page: pageSaved.toJSON(),
           });
         }
       }
@@ -121,7 +102,61 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // const { uname, email, password } = req.body;
+    console.log("update");
+    const { link, pagename } = req.body;
+    const { userPayload } = res.locals;
+
+    const page = await Page.findOne({
+      userOwner: userPayload?._id || null,
+      pagename: pagename,
+    });
+
+    if (userPayload && page && link._id) {
+      let url = link.url;
+      let isPlaylist = false;
+      if (link.embedded !== "none") {
+        if (link.embedded === "spotify") {
+          isPlaylist = link.url.includes("playlist");
+          const urlArray = url.split("/").reverse();
+          url = `${isPlaylist ? "playlist/" : "track/"}${urlArray[0]}`;
+        } else if (link.embedded === "soundcloud") {
+          url = url.replace("https://soundcloud.com", "");
+        } else {
+          const urlArray = url.split("=").reverse();
+          url = urlArray[0];
+        }
+      }
+
+      const updatedLink = await Link.findOneAndUpdate(
+        { _id: link._id },
+        {
+          url: url,
+          label: link.label, //TODO can filter label here later for bad words
+          embedded: link.embedded,
+          isPlaylist: link.url.includes("playlist"),
+          folderOwner: !link.isFolder && link?.folderOwner ? link.folderOwner : undefined,
+        }
+      );
+
+      if (updatedLink) {
+        const allLinks = await Link.find(
+          { pageOwner: page, deletedAt: null },
+          { timesClicked: 0, deletedAt: 0, __v: 0, pageOwner: 0 }
+        );
+        const pageSaved = await Page.findOneAndUpdate(
+          { userOwner: userPayload._id, pagename: pagename },
+          { pageLinks: allLinks }
+        );
+        if (pageSaved) {
+          return res.status(201).json({
+            message: "Link successfully updated",
+          });
+        }
+      }
+    }
+    return res.status(400).json({
+      message: "Something went wrong D:",
+    });
   } catch (error) {
     next(error);
   }
