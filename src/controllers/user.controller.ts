@@ -12,7 +12,7 @@ import axios from "axios";
 dotenv.config();
 
 const recaptchaSecret =
-  process.env.NODE_MODE === "production" ? process.env.RECAPTCHA_SECRET : process.env.DEV_RECAPTCHA_SECRET;
+  process.env.NODE_MODE === "production" ? process.env.PROD_RECAPTCHA_SECRET : process.env.DEV_RECAPTCHA_SECRET;
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
