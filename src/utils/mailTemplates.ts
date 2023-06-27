@@ -136,8 +136,8 @@ const confirmEmailTemplate = (confirmUrl: string) => {
                       style="display: inline-block"
                     >
                       <img
-                        src="https://i.imgur.com/rCQk81S.png"
-                        alt="Logo"
+                        src="https://zoz.bio/zoz.png"
+                        alt="Zoz.bio Logo"
                         border="0"
                         width="300"
                         style="

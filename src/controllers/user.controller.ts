@@ -49,16 +49,16 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const response = await axios.post(
       `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptcha}`
     );
-    console.log(response.data);
+
+    // ["error-codes"] includes "timeout-or-duplicate"
+    if (!response?.data?.success)
+      return res.status(400).json({
+        message: "Maybe your token has expired, request a new recaptcha token and try again",
+      });
 
     if (process.env.NODE_MODE === "production" && response?.data?.hostname !== "zoz.bio")
       return res.status(400).json({
         message: "Hmmm, your doin something nasty, go away!",
-      });
-
-    if (!response?.data?.success)
-      return res.status(400).json({
-        message: "Maybe your token has expired, request a new recaptcha token and try again",
       });
 
     await new User({
