@@ -11,7 +11,7 @@ router.get("/edit", authenticateToken(), pageController.getEditPage);
 
 router.post(
   "/create",
-  rateLimiterHour(30, "You cant create more pages for now", true),
+  rateLimiterHour(30, false, "You cant create more pages for now"),
   authenticateToken(),
   pageController.createPage
 );

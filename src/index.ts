@@ -55,7 +55,7 @@ const runServer = () => {
   router.get("/ping", (req, res) => res.status(200).json({ message: "pong" }));
 
   /*  NOT FOUND */
-  router.get("*", (req, res) => res.status(404).json({ message: "Not Found" }));
+  router.get("*", (req, res) => res.status(404).json({ message: "Not Found~" }));
 
   /* ERROR HANDLING */
   router.use(errorHandler());

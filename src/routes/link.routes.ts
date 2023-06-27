@@ -4,8 +4,9 @@ import { authenticateToken } from "../middleware/auth";
 
 const router = express.Router();
 
-router.get("/folders", authenticateToken(), linkController.getFolders);
-router.post("/create", authenticateToken(), linkController.createLink);
-router.put("/update", authenticateToken(), linkController.updateLink);
+router.get("/", authenticateToken(), linkController.getFolders);
+router.post("/", authenticateToken(), linkController.createLink);
+router.put("/", authenticateToken(), linkController.updateLink);
+router.put("/delete", authenticateToken(), linkController.deleteLink);
 
 export = router;

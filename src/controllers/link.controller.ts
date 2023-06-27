@@ -102,7 +102,6 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("update");
     const { link, pagename } = req.body;
     const { userPayload } = res.locals;
 
@@ -128,7 +127,7 @@ const updateLink = async (req: Request, res: Response, next: NextFunction) => {
       }
 
       const updatedLink = await Link.findOneAndUpdate(
-        { _id: link._id },
+        { _id: link._id, pageOwner: page },
         {
           url: url,
           label: link.label, //TODO can filter label here later for bad words
@@ -162,8 +161,56 @@ const updateLink = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const deleteLink = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { linkId, pagename } = req.body;
+    const { userPayload } = res.locals;
+
+    const page = await Page.findOne({
+      userOwner: userPayload?._id || null,
+      pagename: pagename,
+    });
+
+    if (userPayload && page && linkId) {
+      const updatedLink = await Link.findOneAndUpdate(
+        { _id: linkId, pageOwner: page },
+        {
+          deletedAt: new Date(),
+        },
+        { new: true }
+      );
+
+      if (updatedLink) {
+        if (updatedLink.isFolder) {
+          await Link.updateMany({ folderOwner: updatedLink, pageOwner: page }, { deletedAt: new Date() });
+        }
+
+        const allLinks = await Link.find(
+          { pageOwner: page, deletedAt: null },
+          { timesClicked: 0, deletedAt: 0, __v: 0, pageOwner: 0 }
+        );
+        const pageSaved = await Page.findOneAndUpdate(
+          { userOwner: userPayload._id, pagename: pagename },
+          { pageLinks: allLinks }
+        );
+        if (pageSaved) {
+          return res.status(201).json({
+            message: "Link successfully deleted",
+          });
+        }
+      }
+    }
+    return res.status(400).json({
+      message: "Something went wrong D:",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getFolders,
   createLink,
   updateLink,
+  deleteLink,
 };

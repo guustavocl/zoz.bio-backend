@@ -1,29 +1,45 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import logger from "../utils/logger";
 
-export const errorHandler = () => (error: any, req: Request, res: Response) => {
-  if (error) {
-    if (typeof error === "string") {
-      return res.status(400).json({ message: error });
-    }
+type ErrorProps = {
+  name: string;
+  message: string;
+  errors: {
+    message: string;
+    kind: string;
+    path: string;
+    value: string;
+    reason: string;
+  };
+};
 
-    if (error.name === "ValidationError") {
-      logger.error(error, "Mongoose ValidationError");
-      const errors = error.errors;
-      for (const key in errors) {
-        if (Object.prototype.hasOwnProperty.call(errors, key)) {
-          errors[key] = errors[key]["message"];
-        }
+export const errorHandler = () => (error: unknown, req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (error) {
+      if (typeof error === "string") {
+        return res.status(400).json({ message: error });
       }
-      return res.status(400).json({ message: "Fix your input values and try again", errors });
-    }
+      if (typeof error === "object") {
+        const objectError = error as ErrorProps;
 
-    if (error.name === "UnauthorizedError") {
-      return res.status(401).json({ message: "Token not valid" });
+        // Mongoose validation will catch here
+        if (objectError.name === "ValidationError") {
+          const message = objectError.message.split(":").reverse();
+          return res.status(400).json({ message: message[0] });
+        }
+
+        if (objectError.name === "UnauthorizedError") {
+          return res.status(401).json({ message: "Unauthorized. Session expired or invalid" });
+        }
+
+        return res.status(400).json({ message: objectError.message });
+      }
     }
+    logger.error("Error handler", new Error("Error not and string or object please check this"));
+    if (res?.status) return res?.status(500).json({ message: "Something went wrong D:" });
+    next();
+  } catch (error) {
+    logger.error("Error handler", new Error("Internal Server Error~"));
+    if (res?.status) return res?.status(500).json({ message: "Internal Server Error!" });
   }
-  logger.error(error, new Error("Internal Server Error"));
-  console.log(req);
-  console.log("req error??");
-  return res?.status(500).json({ message: "Internal Server Error" });
 };

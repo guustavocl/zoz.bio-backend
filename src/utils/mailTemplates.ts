@@ -309,7 +309,7 @@ const confirmEmailTemplate = (confirmUrl: string) => {
                     "
                   >
                     <p style="margin: 0">
-                      Cheers,<br />
+                      Cheers, 
                       <a target="_blank" href="http://zoz.bio/gustavo"
                         >@Gustavo</a
                       >

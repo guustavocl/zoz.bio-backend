@@ -7,6 +7,12 @@ import sendConfirmationMail from "../utils/mailSender";
 import Token, { TokenProps } from "../models/Token";
 import moment from "moment";
 import Page from "../models/Page";
+import dotenv from "dotenv";
+import axios from "axios";
+dotenv.config();
+
+const recaptchaSecret =
+  process.env.NODE_MODE === "production" ? process.env.RECAPTCHA_SECRET : process.env.DEV_RECAPTCHA_SECRET;
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -27,7 +33,33 @@ const getUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { uname, email, password } = req.body;
+    const { uname, email, password, cpassword, recaptcha } = req.body;
+
+    if (password !== cpassword)
+      return res.status(400).json({
+        message: "Passwords doesn't match!",
+      });
+
+    if (!recaptcha)
+      return res.status(400).json({
+        message: "Hmmm, something is missing hehehehehehehehhehe",
+      });
+
+    // validate recapthca token
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptcha}`
+    );
+    console.log(response.data);
+
+    if (process.env.NODE_MODE === "production" && response?.data?.hostname !== "zoz.bio")
+      return res.status(400).json({
+        message: "Hmmm, your doin something nasty, go away!",
+      });
+
+    if (!response?.data?.success)
+      return res.status(400).json({
+        message: "Maybe your token has expired, request a new recaptcha token and try again",
+      });
 
     await new User({
       uname: uname,
@@ -43,10 +75,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
         const confirmEmailToken = await createNewToken(user, "confirmEmail");
         if (confirmEmailToken)
-          sendConfirmationMail(
-            user.email,
-            `http://zoz.bio/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
-          );
+          sendConfirmationMail(user.email, `http://zoz.bio/confirm?token=${confirmEmailToken.hash}`);
       })
       .catch(error => {
         next(error);
@@ -79,13 +108,10 @@ const sendConfirmEmail = async (req: Request, res: Response, next: NextFunction)
       if (!confirmEmailToken) {
         confirmEmailToken = await createNewToken(user, "confirmEmail");
         if (confirmEmailToken)
-          sendConfirmationMail(
-            user.email,
-            `http://zoz.bio/confirm?email=${user.email}&token=${confirmEmailToken.hash}`
-          );
+          sendConfirmationMail(user.email, `http://zoz.bio/confirm?token=${confirmEmailToken.hash}`);
       }
       if (confirmEmailToken && moment().diff(confirmEmailToken.createdAt, "minutes") > 1) {
-        sendConfirmationMail(user.email, `http://zoz.bio/confirm?email=${user.email}&token=${confirmEmailToken.hash}`);
+        sendConfirmationMail(user.email, `http://zoz.bio/confirm?token=${confirmEmailToken.hash}`);
       }
     }
 
@@ -107,22 +133,20 @@ const sendResetEmail = async (req: Request, res: Response, next: NextFunction) =
 
 const confirmEmail = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, token } = req.body;
-    const user = await User.findOne({ email: email });
-    if (user && !user.isEmailConfirmed) {
-      const confirmEmailToken: TokenProps | null = await Token.findOne({
-        userOwner: user,
-        type: "confirmEmail",
-      });
+    const { token } = req.body;
+    const confirmEmailToken: TokenProps | null = await Token.findOne({
+      hash: token,
+      type: "confirmEmail",
+    });
 
-      if (confirmEmailToken && confirmEmailToken.hash === token) {
-        await confirmEmailToken.deleteOne();
-        await User.findOneAndUpdate({ email: email }, { isEmailConfirmed: true });
-        return res.status(200).json({
-          confirmated: true,
-          message: "Email successfully confirmated",
-        });
-      }
+    if (confirmEmailToken && confirmEmailToken.hash === token) {
+      const userOwner = confirmEmailToken.userOwner;
+      await confirmEmailToken.deleteOne();
+      await User.findOneAndUpdate({ _id: userOwner }, { isEmailConfirmed: true });
+      return res.status(200).json({
+        confirmated: true,
+        message: "Email successfully confirmated",
+      });
     }
     res.status(406).json({
       confirmated: false,

@@ -88,6 +88,7 @@ UserSchema.path("email").validate(
   "This email is invalid",
   "INVALID"
 );
+
 UserSchema.path("email").validate(
   async (email: string) => {
     const emailCount = await mongoose.models.User.countDocuments({ email });

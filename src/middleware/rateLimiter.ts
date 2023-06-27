@@ -14,8 +14,8 @@ export const rateLimiter = (
 
 export const rateLimiterHour = (
   max = 4,
-  message = "You can't make any more requests at the moment. Try again later",
-  skipFailedRequests = false
+  skipFailedRequests = false,
+  message = "You can't make any more requests at the moment. Try again later"
 ) => {
   const apiRequestLimiter = rateLimit({
     max,
@@ -29,8 +29,8 @@ export const rateLimiterHour = (
 
 export const rateLimiterDay = (
   max = 4,
-  message = "You can't make any more requests at the moment. Try again later",
-  skipFailedRequests = false
+  skipFailedRequests = false,
+  message = "You can't make any more requests at the moment. Try again later"
 ) => {
   const apiRequestLimiter = rateLimit({
     max,

@@ -161,6 +161,7 @@ const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
     const { userPayload } = res.locals;
 
     if (userPayload) {
+      // TODO - validate max 10 badges
       const pageSaved = await Page.findOneAndUpdate({ userOwner: userPayload._id, pagename: pagename }, { badges });
       if (pageSaved) {
         return res.status(201).json({
@@ -182,6 +183,7 @@ const saveSocialMedia = async (req: Request, res: Response, next: NextFunction) 
     const { userPayload } = res.locals;
 
     if (userPayload) {
+      // TODO - validate max 25 scoails
       const pageSaved = await Page.findOneAndUpdate(
         { userOwner: userPayload._id, pagename: pagename },
         { socialMedias: items }
