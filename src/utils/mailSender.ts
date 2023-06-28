@@ -10,7 +10,6 @@ const noReplyPwd = process.env.MAIL_NOREPLY_PWD;
 
 const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://zoz.bio/") => {
   try {
-    console.log("here", confirmUrl);
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,

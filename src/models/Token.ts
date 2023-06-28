@@ -23,7 +23,7 @@ const TokenSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    expiresAt: { type: Date, default: Date.now, expires: 3600 }, //3600 = 1hour
+    createdAt: { type: Date, expires: 3600, default: Date.now },
   },
   {
     timestamps: true,

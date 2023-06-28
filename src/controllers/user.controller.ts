@@ -89,7 +89,7 @@ const createNewToken = async (user: UserProps, type: string): Promise<TokenProps
   const resetToken = crypto.randomBytes(32).toString("hex");
   const hash = await bcrypt.hash(resetToken, bcrypt.genSaltSync(12));
   const token = await new Token({
-    hash: hash,
+    hash: hash.replace(/[^a-z0-9_-]+|\s+/gim, ""),
     userOwner: user,
     type: type,
   }).save();
@@ -107,11 +107,10 @@ const sendConfirmEmail = async (req: Request, res: Response, next: NextFunction)
       });
       if (!confirmEmailToken) {
         confirmEmailToken = await createNewToken(user, "confirmEmail");
-        if (confirmEmailToken)
-          sendConfirmationMail(user.email, `http://zoz.bio/confirm?token=${confirmEmailToken.hash}`);
+        if (confirmEmailToken) sendConfirmationMail(user.email, `http://zoz.bio/confirm/${confirmEmailToken.hash}`);
       }
       if (confirmEmailToken && moment().diff(confirmEmailToken.createdAt, "minutes") > 1) {
-        sendConfirmationMail(user.email, `http://zoz.bio/confirm?token=${confirmEmailToken.hash}`);
+        sendConfirmationMail(user.email, `http://zoz.bio/confirm/${confirmEmailToken.hash}`);
       }
     }
 
