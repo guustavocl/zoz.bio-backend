@@ -3,7 +3,7 @@ import User, { UserProps } from "../models/User";
 import logger from "../utils/logger";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import sendConfirmationMail from "../utils/mailSender";
+import { sendConfirmationMail } from "../utils/mailSender";
 import Token, { TokenProps } from "../models/Token";
 import moment from "moment";
 import Page from "../models/Page";
@@ -108,8 +108,7 @@ const sendConfirmEmail = async (req: Request, res: Response, next: NextFunction)
       if (!confirmEmailToken) {
         confirmEmailToken = await createNewToken(user, "confirmEmail");
         if (confirmEmailToken) sendConfirmationMail(user.email, `http://zoz.bio/confirm/${confirmEmailToken.hash}`);
-      }
-      if (confirmEmailToken && moment().diff(confirmEmailToken.createdAt, "minutes") > 1) {
+      } else if (confirmEmailToken && moment().diff(confirmEmailToken.createdAt, "minutes") > 1) {
         sendConfirmationMail(user.email, `http://zoz.bio/confirm/${confirmEmailToken.hash}`);
       }
     }
