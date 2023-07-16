@@ -41,45 +41,24 @@ export const updatePageColors = async (pageBody: PageProps, userId: string) => {
 export const updatePageAvatar = async (pagename: string, userId: string, file: Express.Multer.File) => {
   const imagePath = file.destination.replace("uploads", "images");
 
-  // await sharp(file.path, { pages: -1 })
-  //   .resize(400, 400, { fit: "inside" })
-  //   .webp()
-  //   .toFile(`${imagePath}/avatar.webp`, async err => {
-  //     if (err) throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Something went while converting your avatar D:");
-  //   });
-
-  // if (file?.path)
-  //   await fs.unlink(file.path, function (err) {
-  //     if (err) throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Something went while unlinking your avatar D:");
-  //   });
-
-  // return await Page.findOneAndUpdate(
-  //   { userOwner: userId, pagename: pagename },
-  //   {
-  //     pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
-  //   }
-  // );
-
   await sharp(file.path, { pages: -1 })
     .resize(400, 400, { fit: "inside" })
     .webp()
     .toFile(`${imagePath}/avatar.webp`, async err => {
       if (err) throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Something went while converting your avatar D:");
-      console.log("here");
       if (file?.path)
-        fs.unlink(file.path, function (err) {
+        await fs.unlink(file.path, function (err) {
           if (err)
             throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Something went while unlinking your avatar D:");
         });
-      console.log("here2: ", imagePath);
-      return await Page.findOneAndUpdate(
-        { userOwner: userId, pagename: pagename },
-        {
-          pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
-        }
-      );
     });
-  return null;
+
+  return await Page.findOneAndUpdate(
+    { userOwner: userId, pagename: pagename },
+    {
+      pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
+    }
+  );
 };
 
 export const updatePageBackground = async (pagename: string, userId: string, file: Express.Multer.File) => {
@@ -97,13 +76,11 @@ export const updatePageBackground = async (pagename: string, userId: string, fil
           if (err)
             throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Something went while unlinking your background D:");
         });
-
-      return await Page.findOneAndUpdate(
-        { userOwner: userId, pagename: pagename },
-        {
-          pfpUrl: `${config.apiUrl}${imagePath}/bg.webp?v=${new Date().getTime()}`,
-        }
-      );
     });
-  return null;
+  return await Page.findOneAndUpdate(
+    { userOwner: userId, pagename: pagename },
+    {
+      backgroundUrl: `${config.apiUrl}${imagePath}/bg.webp?v=${new Date().getTime()}`,
+    }
+  );
 };
