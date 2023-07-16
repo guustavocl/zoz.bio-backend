@@ -10,7 +10,7 @@ export const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://
     const textMsg = CONFIRMATION_MAIL_TEXT(confirmUrl);
     const html = confirmEmailTemplate(confirmUrl);
     await axios.post(
-      "http://127.0.0.1:3333/mail",
+      config.mailSenderUrl,
       {
         from: "noreply@zoz.bio",
         fromName: "ZOZ.bio",

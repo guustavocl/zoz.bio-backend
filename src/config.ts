@@ -22,4 +22,5 @@ export const config = {
   authCookie: "zoz_auth",
   recaptchaSecret: production ? process.env.RECAPTCHA_PRODUCTION_SECRET : process.env.RECAPTCHA_DEVELOPMENT_SECRET,
   mailSenderToken: process.env.MAIL_SENDER_TOKEN,
+  mailSenderUrl: production ? "https://sender.gus.sh/mail" : "http://127.0.0.1:3333/mail",
 };
