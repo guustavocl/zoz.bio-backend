@@ -9,7 +9,7 @@ const getDurationInMilliseconds = (start: [number, number]) => {
   return (diff[0] * NS_PER_SEC + diff[1]) / NS_TO_MS / 1000;
 };
 
-export const reqLogger = () => (req: Request, res: Response, next: NextFunction) => {
+export const requestLogger = () => (req: Request, res: Response, next: NextFunction) => {
   const start = process.hrtime();
   /* RESPONSE LOGGER */
   res.on("finish", () => {

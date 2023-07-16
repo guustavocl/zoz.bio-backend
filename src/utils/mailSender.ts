@@ -1,39 +1,32 @@
 // import nodemailer from "nodemailer";
-import confirmEmailTemplate from "./mailTemplates";
-import dotenv from "dotenv";
+import axios from "axios";
+import { config } from "../config";
+import { CONFIRMATION_MAIL_TEXT } from "./constants";
 import logger from "./logger";
-import SES from "aws-sdk/clients/ses";
-dotenv.config();
-
-const SESClient = new SES({
-  region: "us-east-1",
-});
+import confirmEmailTemplate from "../templates/confirmEmail";
 
 export const sendConfirmationMail = async (mailTo: string, confirmUrl = "http://zoz.bio/") => {
   try {
-    await SESClient.sendEmail({
-      Source: "ZOZ.bio <noreply@zoz.bio>",
-      Destination: {
-        ToAddresses: [mailTo],
+    const textMsg = CONFIRMATION_MAIL_TEXT(confirmUrl);
+    const html = confirmEmailTemplate(confirmUrl);
+    await axios.post(
+      "http://127.0.0.1:3333/mail",
+      {
+        from: "noreply@zoz.bio",
+        fromName: "ZOZ.bio",
+        to: mailTo,
+        subject: "Thanks for join us ✔",
+        text: textMsg,
+        html: html,
       },
-      Message: {
-        Subject: {
-          Data: "Thanks for join us ✔",
+      {
+        headers: {
+          Authorization: config.mailSenderToken,
         },
-        Body: {
-          Text: {
-            Data: `Confirm Your Email Address
-            Enter the following link to confirm your email address. ${confirmUrl} |
-            If you didn't create an account with zoz.bio, you can safely delete this email.`,
-          },
-          Html: {
-            Data: confirmEmailTemplate(confirmUrl),
-          },
-        },
-      },
-      ConfigurationSetName: "zozbio",
-    }).promise();
+      }
+    );
   } catch (error) {
-    logger.error(error, "Error on send confirmation email");
+    console.log(error);
+    logger.error("Error on send confirmation email");
   }
 };

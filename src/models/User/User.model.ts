@@ -1,43 +1,28 @@
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { model, models, Schema, PaginateModel } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+import { UserProps } from "./User.types";
+import { MAX_LENGTH_MSG, MIN_LENGTH_MSG } from "../../utils/constants";
 
-export interface UserProps extends mongoose.Document {
-  uname: string;
-  email: string;
-  password: string;
-  loginCount: string;
-  lastLoginIP: string;
-  lastLoginDate: Date;
-  subscriptionUntil: Date;
-  subscription: string;
-  isEmailConfirmed: boolean;
-  isBanned: boolean;
-  isBlocked: boolean;
-  isMod: boolean;
-  isAdmin: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const UserSchema = new mongoose.Schema(
+const UserSchema = new Schema(
   {
     uname: {
       type: String,
       required: [true, "Please inform your name"],
-      minLength: [1, "Name must be at least 1 characters length"],
-      maxLength: [50, "Name must be less than 50 characters length"],
+      minLength: [1, MIN_LENGTH_MSG("Name", 1)],
+      maxLength: [50, MAX_LENGTH_MSG("Name", 50)],
     },
     email: {
       type: String,
       required: [true, "Please inform an email"],
-      minLength: [5, "Email must be at least 5 characters length"],
-      maxLength: [50, "Email must be less than 50 characters length"],
+      minLength: [5, MIN_LENGTH_MSG("Email", 5)],
+      maxLength: [50, MAX_LENGTH_MSG("Email", 50)],
       unique: true,
     },
     password: {
       type: String,
       required: [true, "Please inform your password"],
-      minLength: [6, "Password must be at least 6 characters length"],
+      minLength: [6, MIN_LENGTH_MSG("Password", 5)],
     },
     loginCount: { type: Number, default: 0 },
     lastLoginIP: { type: String },
@@ -71,6 +56,13 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
+UserSchema.plugin(mongoosePaginate);
+
+UserSchema.methods.isPasswordMatch = async function (password: string) {
+  const user = this as UserProps;
+  return bcrypt.compare(password, user.password);
+};
+
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
@@ -91,11 +83,11 @@ UserSchema.path("email").validate(
 
 UserSchema.path("email").validate(
   async (email: string) => {
-    const emailCount = await mongoose.models.User.countDocuments({ email });
+    const emailCount = await models.User.countDocuments({ email });
     return !emailCount;
   },
   "This email is already registered!",
   "DUPLICATED"
 );
 
-export default mongoose.model<UserProps>("User", UserSchema);
+export const User = model<UserProps, PaginateModel<UserProps>>("User", UserSchema);

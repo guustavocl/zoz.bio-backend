@@ -1,71 +1,24 @@
-import { NextFunction, Request, Response } from "express";
-import { generateAccessToken } from "../middleware/auth";
-import User from "../models/User";
-import bcrypt from "bcryptjs";
-import dotenv from "dotenv";
-dotenv.config();
+import { Request, Response } from "express";
+import catchAsync from "../utils/catch";
+import { removeCookie, setCookie } from "../utils/jwt";
+import { validate } from "../utils/validate";
+import { AuthService } from "../services/Auth";
+import { AuthValidations } from "../models/Auth/Auth.validations";
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { email, password } = req.body;
-    const loginIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
-    const user = await User.findOneAndUpdate(
-      { email: email },
-      { $inc: { loginCount: 1 }, lastLoginIP: loginIp, lastLoginDate: new Date() }
-    );
+const login = catchAsync(async (req: Request, res: Response) => {
+  const { body } = await validate(AuthValidations.login, req);
+  const loginIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+  const user = await AuthService.login(body.email, body.password, loginIp);
+  setCookie(user, res);
+  res.send({ user: user.toJSON() });
+});
 
-    if (user) {
-      if (user.isBanned || user.isBlocked) {
-        return res.status(403).json({
-          message: "Your are banned or blocked, sorry",
-        });
-      }
+const logout = catchAsync(async (req: Request, res: Response) => {
+  removeCookie(res);
+  res.send({ message: "Logout successfull" });
+});
 
-      if (bcrypt.compareSync(password, user.password)) {
-        const token = generateAccessToken(user);
-        const expireDate = new Date();
-        expireDate.setDate(expireDate.getDate() + 1);
-        res.cookie("zoz_auth", token, {
-          secure: process.env.NODE_MODE === "production" ? true : false,
-          httpOnly: true,
-          expires: expireDate,
-          sameSite: "strict",
-          domain: process.env.NODE_MODE === "production" ? "zoz.bio" : "127.0.0.1",
-        });
-
-        return res.status(200).json({
-          message: "Login success",
-          user: user.toJSON(),
-        });
-      }
-    }
-
-    res.status(401).json({
-      message: "The email or password you entered is incorrect.",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const logout = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    res.cookie("zoz_auth", "", {
-      secure: process.env.NODE_MODE === "production" ? false : false,
-      httpOnly: true,
-      expires: new Date(1),
-      sameSite: "strict",
-      domain: process.env.NODE_MODE === "production" ? "zoz.bio" : "127.0.0.1",
-    });
-    return res.status(200).json({
-      message: "Logout successfull.",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export default {
+export const AuthController = {
   login,
   logout,
 };

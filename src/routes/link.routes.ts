@@ -1,12 +1,14 @@
-import express from "express";
-import linkController from "../controllers/link.controller";
-import { authenticateToken } from "../middleware/auth";
+import { Router } from "express";
+import { LinkController } from "../controllers/link.controller";
+import { authenticate } from "../middleware/auth.middleware";
 
-const router = express.Router();
+export const LinkRoutes = Router();
 
-router.get("/", authenticateToken(), linkController.getFolders);
-router.post("/", authenticateToken(), linkController.createLink);
-router.put("/", authenticateToken(), linkController.updateLink);
-router.put("/delete", authenticateToken(), linkController.deleteLink);
+LinkRoutes.route("/")
+  .get(authenticate("admin"), LinkController.getOne)
+  .post(authenticate(), LinkController.create)
+  .put(authenticate(), LinkController.update);
 
-export = router;
+LinkRoutes.get("/folders", authenticate(), LinkController.getFolders);
+
+LinkRoutes.put("/delete", authenticate(), LinkController.remove);

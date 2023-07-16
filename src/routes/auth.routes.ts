@@ -1,10 +1,12 @@
-import express from "express";
-import authController from "../controllers/auth.controller";
-import { rateLimiterHour } from "../middleware/rateLimiter";
+import { Router } from "express";
+import { AuthController } from "../controllers/auth.controller";
+import { rateLimiterHour } from "../middleware/limiter.middleware";
 
-const router = express.Router();
+export const AuthRoutes = Router();
 
-router.post("/login", rateLimiterHour(10, false, "You’ve reached the maximum logon attempts"), authController.login);
-router.post("/logout", authController.logout);
-
-export = router;
+AuthRoutes.post(
+  "/login",
+  rateLimiterHour(10, false, "You’ve reached the maximum logon attempts"),
+  AuthController.login
+);
+AuthRoutes.post("/logout", AuthController.logout);

@@ -1,28 +1,23 @@
-import express from "express";
-import pageController from "../controllers/page.controller";
-import { authenticateToken } from "../middleware/auth";
-import { rateLimiterHour } from "../middleware/rateLimiter";
-import { uploadAvatar, uploadBackground } from "../middleware/uploadFile";
+import { Router } from "express";
+import { PageController } from "../controllers/page.controller";
+import { authenticate } from "../middleware/auth.middleware";
+import { rateLimiterHour } from "../middleware/limiter.middleware";
+import { uploadAvatar, uploadBackground } from "../middleware/upload.middleware";
 
-const router = express.Router();
+export const PageRoutes = Router();
 
-router.get("/", pageController.getPage);
-router.get("/edit", authenticateToken(), pageController.getEditPage);
+PageRoutes.route("/")
+  .get(PageController.getByPagename)
+  .post(rateLimiterHour(30, false, "You cant create more pages for now"), authenticate(), PageController.create);
 
-router.post(
-  "/create",
-  rateLimiterHour(30, false, "You cant create more pages for now"),
-  authenticateToken(),
-  pageController.createPage
-);
-router.get("/check_pagename", authenticateToken(), pageController.checkPagename);
-router.post("/save_info", authenticateToken(), pageController.savePageInfo);
-router.post("/save_badges", authenticateToken(), pageController.saveBadges);
-router.post("/save_social_media", authenticateToken(), pageController.saveSocialMedia);
+PageRoutes.get("/edit", authenticate(), PageController.getPageToEdit);
 
-router.post("/upload_avatar", authenticateToken(), uploadAvatar(), pageController.uploadAvatar);
-router.post("/upload_background", authenticateToken(), uploadBackground(), pageController.uploadBackground);
+PageRoutes.get("/check_pagename", authenticate(), PageController.checkPagename);
+PageRoutes.post("/save_info", authenticate(), PageController.updatePageInfo);
+PageRoutes.post("/save_badges", authenticate(), PageController.updatePageBadges);
+PageRoutes.post("/save_social_media", authenticate(), PageController.updatePageSocialMedia);
 
-router.post("/update_colors", authenticateToken(), pageController.updateColors);
+PageRoutes.post("/upload_avatar", authenticate(), uploadAvatar(), PageController.updatePageAvatar);
+PageRoutes.post("/upload_background", authenticate(), uploadBackground(), PageController.updatePageBackground);
 
-export = router;
+PageRoutes.post("/update_colors", authenticate(), PageController.updatePageColors);

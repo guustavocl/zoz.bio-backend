@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import mime from "mime-types";
 import multer from "multer";
 import fs from "fs";
-import Page from "../models/Page";
+import { PageService } from "../services/Page";
 let page_id = "";
 
 const multerBgStorage = (): multer.StorageEngine => {
@@ -77,12 +77,8 @@ const getBgConfig = (): multer.Options => {
 };
 
 export const uploadAvatar = () => async (req: Request, res: Response, next: NextFunction) => {
-  const { pagename } = req.query;
   const { userPayload } = res.locals;
-  const page = await Page.findOne({
-    userOwner: userPayload._id,
-    pagename: pagename,
-  });
+  const page = await PageService.findByPagenameAndUserOwner(req.query?.pagename as string, userPayload?._id);
   if (page) {
     page_id = page._id;
     multer(getAvatarConfig()).single("avatar")(req, res, () => {
@@ -96,12 +92,8 @@ export const uploadAvatar = () => async (req: Request, res: Response, next: Next
 };
 
 export const uploadBackground = () => async (req: Request, res: Response, next: NextFunction) => {
-  const { pagename } = req.query;
   const { userPayload } = res.locals;
-  const page = await Page.findOne({
-    userOwner: userPayload._id,
-    pagename: pagename,
-  });
+  const page = await PageService.findByPagenameAndUserOwner(req.query?.pagename as string, userPayload?._id);
   if (page) {
     page_id = page._id;
     multer(getBgConfig()).single("background")(req, res, () => {

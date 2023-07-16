@@ -1,19 +1,15 @@
-import express from "express";
-import userController from "../controllers/user.controller";
-import { authenticateToken } from "../middleware/auth";
-import { rateLimiterDay, rateLimiterHour } from "../middleware/rateLimiter";
+import { Router } from "express";
+import { UserController } from "../controllers/user.controller";
+import { authenticate } from "../middleware/auth.middleware";
+import { rateLimiterDay, rateLimiterHour } from "../middleware/limiter.middleware";
 
-const router = express.Router();
+export const UserRoutes = Router();
 
-router.get("/", rateLimiterHour(200), authenticateToken(), userController.getUser);
-router.post(
-  "/create",
-  rateLimiterDay(10, false, "You cant create more accounts for today!"),
-  userController.createUser
-);
-router.post("/send_confirm_email", rateLimiterDay(10), userController.sendConfirmEmail);
-router.post("/send_reset_email", rateLimiterDay(10), userController.sendResetEmail);
-router.post("/confirm_email", rateLimiterDay(3, true), userController.confirmEmail);
-router.post("/reset_password", rateLimiterDay(5, true), userController.resetPassword);
+UserRoutes.route("/")
+  .get(rateLimiterHour(200), authenticate("admin"), UserController.getOne)
+  .post(rateLimiterDay(10, false, "You cant create more accounts for today!"), UserController.create);
 
-export = router;
+UserRoutes.get("/logged", rateLimiterHour(200), authenticate(), UserController.getLogged);
+
+UserRoutes.post("/send_confirm_email", rateLimiterDay(10), UserController.sendConfirmationEmail);
+UserRoutes.post("/send_reset_email", rateLimiterDay(10), UserController.sendResetEmail);

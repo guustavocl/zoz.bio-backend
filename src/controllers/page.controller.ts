@@ -1,332 +1,204 @@
-import { NextFunction, Request, Response } from "express";
-import { config } from "../config/config";
-import Page, { PageProps } from "../models/Page";
-import User from "../models/User";
-import logger from "../utils/logger";
-import sharp from "sharp";
-import fs from "fs";
+import { Request, Response } from "express";
+import httpStatus from "http-status";
+import { PageValidations } from "../models/Page/Page.validations";
+import { PageService } from "../services/Page";
+import { ApiError } from "../utils/ApiError";
+import catchAsync from "../utils/catch";
+import { validate } from "../utils/validate";
 
-const getPage = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { pagename } = req.query;
-    if (pagename) {
-      const page = await Page.findOne({
-        pagename: pagename.toString().toLowerCase(),
-      });
-      if (page) return res.status(200).json({ page: page.toJSON() });
-    }
-    res.status(404).json({ message: "Page not found!" });
-  } catch (error) {
-    next(error);
+const getByPagename = catchAsync(async (req: Request, res: Response) => {
+  const { query } = await validate(PageValidations.getByPagename, req);
+  const page = await PageService.findByPagename(query.pagename);
+
+  if (page) return res.send({ page: page.toJSON() });
+  throw new ApiError(httpStatus.NOT_FOUND, "Page not found!");
+});
+
+const getPageToEdit = catchAsync(async (req: Request, res: Response) => {
+  const { query } = await validate(PageValidations.getByPagename, req);
+  const { userPayload } = res.locals;
+  const page = await PageService.findByPagenameAndUserOwner(query.pagename, userPayload?._id);
+
+  if (page) return res.send({ page: page.toJSON() });
+  throw new ApiError(httpStatus.NOT_FOUND, "Page not found!");
+});
+
+const checkPagename = catchAsync(async (req: Request, res: Response) => {
+  const { query } = await validate(PageValidations.getByPagename, req);
+  const countPages = await PageService.countByPagename(query.pagename);
+  if (countPages > 0) {
+    return res.send({ isAvailable: false });
   }
-};
+  return res.send({ isAvailable: true });
+});
 
-const getEditPage = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { pagename } = req.query;
-    const { userPayload } = res.locals;
+const create = catchAsync(async (req: Request, res: Response) => {
+  const { body } = await validate(PageValidations.create, req);
+  const { userPayload } = res.locals;
+  const page = await PageService.create(body, userPayload);
+  if (page) return res.status(httpStatus.CREATED).send({ message: "Page successfully created", page: page.toJSON() });
+  throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong!");
+});
 
-    if (userPayload && pagename) {
-      const page = await Page.findOne({
-        userOwner: userPayload._id,
-        pagename: pagename.toString().toLowerCase(),
-      });
-      if (page) return res.status(200).json({ page: page.toJSON() });
-    }
+const updatePageInfo = catchAsync(async (req: Request, res: Response) => {
+  const { body } = await validate(PageValidations.updatePageInfo, req);
+  const { userPayload } = res.locals;
 
-    res.status(404).json({ message: "Page not found!" });
-  } catch (error) {
-    next(error);
+  const page = await PageService.updatePageInfos(body, userPayload, body.newPagename);
+  if (page) return res.send({ message: "Page info successfully updated" });
+  throw new ApiError(httpStatus.NOT_FOUND, "Page not found!");
+});
+
+const updatePageBadges = catchAsync(async (req: Request, res: Response) => {
+  const { body } = await validate(PageValidations.updatePageBadges, req);
+  const { userPayload } = res.locals;
+
+  const page = await PageService.updatePageBadges(body.pagename, userPayload?._id, body.badges);
+  if (page) return res.send({ message: "Page badges successfully updated" });
+  throw new ApiError(httpStatus.NOT_FOUND, "Page not found!");
+});
+
+const updatePageSocialMedia = catchAsync(async (req: Request, res: Response) => {
+  const { body } = await validate(PageValidations.updatePageSocialMedia, req);
+  const { userPayload } = res.locals;
+
+  const page = await PageService.updatePageSocialMedia(body.pagename, userPayload?._id, body.socialMedias);
+  if (page) return res.send({ message: "Page social media successfully updated" });
+  throw new ApiError(httpStatus.NOT_FOUND, "Page not found!");
+});
+
+const updatePageColors = catchAsync(async (req: Request, res: Response) => {
+  const { body } = await validate(PageValidations.updatePageColors, req);
+  const { userPayload } = res.locals;
+
+  const page = await PageService.updatePageColors(body, userPayload?._id);
+  if (page) return res.send({ message: "Page colors successfully updated" });
+  throw new ApiError(httpStatus.NOT_FOUND, "Page not found!");
+});
+
+const updatePageAvatar = catchAsync(async (req: Request, res: Response) => {
+  const { query } = await validate(PageValidations.updatePageAvatar, req);
+  const { userPayload } = res.locals;
+
+  if (req.file) {
+    const page = await PageService.updatePageAvatar(query.pagename, userPayload?._id, req.file);
+    if (page) return res.send({ message: "Avatar successfully updated" });
   }
-};
+  throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong!");
+});
 
-const createPage = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    let { pagename } = req.body;
-    const { userPayload } = res.locals;
-    pagename = pagename.replace(/[^a-z0-9_-]+|\s+/gim, "").toLowerCase();
-    const user = await User.findOne({ _id: userPayload._id });
+const updatePageBackground = catchAsync(async (req: Request, res: Response) => {
+  const { query } = await validate(PageValidations.updatePageBackground, req);
+  const { userPayload } = res.locals;
 
-    if (user) {
-      const countPages = await Page.countDocuments({ userOwner: user._id });
-
-      if (pagename.length <= 1) {
-        return res.status(403).json({
-          message: "You can't use this pagename",
-        });
-      }
-      if (!user.isEmailConfirmed && countPages >= 1) {
-        return res.status(403).json({
-          message: "You must confirm your email to create more pages",
-        });
-      }
-      if (user.subscription === "none" && countPages >= 2) {
-        return res.status(403).json({
-          message: "You can't create more pages without a valid subscription",
-        });
-      }
-      if (user.subscription === "none" && pagename.length < 4) {
-        return res.status(403).json({
-          message: "You can't create short name pages without a valid subscription",
-        });
-      }
-
-      //everything went fine so proceed to create the page
-      await new Page({
-        pagename: pagename,
-        userOwner: user._id,
-        subscription: user.subscription,
-        uname: user.uname.substring(0, 24),
-        isAdmin: user.isAdmin,
-        isMod: user.isMod,
-        badges: ["welcome", "new", "zoz", "member"],
-      })
-        .save()
-        .then(async (page: PageProps) => {
-          logger.info(page.toJSON(), "New Page created");
-          return res.status(201).json({
-            message: "Page successfully created",
-            page: page.toJSON(),
-          });
-        })
-        .catch(error => {
-          next(error);
-        });
-    } else {
-      res.status(400).json({
-        message: "Something went wrong D:",
-      });
-    }
-  } catch (error) {
-    next(error);
+  if (req.file) {
+    const page = await PageService.updatePageBackground(query.pagename, userPayload?._id, req.file);
+    if (page) return res.send({ message: "Avatar successfully updated" });
   }
-};
+  throw new ApiError(httpStatus.NOT_FOUND, "Something went wrong!");
+});
 
-const checkPagename = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { pagename } = req.query;
-    if (pagename) {
-      const countPages = await Page.countDocuments({ pagename: pagename });
-      if (countPages > 0) {
-        return res.status(200).json({ isAvailable: false });
-      }
-      return res.status(200).json({ isAvailable: true });
-    }
-    res.status(404).json({ message: "Invalid pagename" });
-  } catch (error) {
-    next(error);
-  }
-};
+// const uploadAvatar = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const { pagename } = req.query;
+//     const { userPayload } = res.locals;
+//     const user = await User.findOne({ _id: userPayload._id });
+//     if (user && req.file) {
+//       const imagePath = req.file.destination.replace("uploads", "images");
+//       sharp(req.file.path, { pages: -1 })
+//         .resize(400, 400, { fit: "inside" })
+//         .webp()
+//         .toFile(`${imagePath}/avatar.webp`, async err => {
+//           if (err) {
+//             // logger.error(err, "Error while trying to sharp file");
+//             return res.status(400).json({
+//               message: "Something went wrong D:",
+//             });
+//           }
+//           if (req.file?.path)
+//             fs.unlink(req.file.path, function (err) {
+//               if (err) {
+//                 // logger.error(err, "Error while trying to remove file");
+//               }
+//             });
 
-const savePageInfo = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { uname, bio, pagename } = req.body;
-    let { newPagename } = req.body;
-    newPagename = newPagename.replace(/[^a-z0-9_-]+|\s+/gim, "").toLowerCase();
-    const { userPayload } = res.locals;
-    const user = await User.findOne({ _id: userPayload._id });
-    if (user) {
-      if (newPagename.length <= 1) {
-        return res.status(403).json({
-          message: "You can't use this pagename",
-        });
-      }
-      if (user.subscription === "none" && newPagename.length < 4) {
-        return res.status(403).json({
-          message: "You can't create short name pages without a valid subscription",
-        });
-      }
+//           const pageSaved = await Page.findOneAndUpdate(
+//             { userOwner: user, pagename: pagename },
+//             {
+//               pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
+//             }
+//           );
+//           if (pageSaved) {
+//             return res.status(200).json({
+//               message: "Avatar successfully saved",
+//             });
+//           }
+//         });
+//     } else {
+//       res.status(400).json({
+//         message: "Something went wrong D:",
+//       });
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-      const pageSaved = await Page.findOneAndUpdate(
-        { userOwner: userPayload._id, pagename: pagename },
-        { uname, bio, pagename: newPagename }
-      );
-      if (pageSaved) {
-        return res.status(201).json({
-          message: "Page successfully saved",
-        });
-      }
-    }
-    return res.status(400).json({
-      message: "Something went wrong D:",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+// const uploadBackground = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const { pagename } = req.query;
+//     const { userPayload } = res.locals;
+//     const user = await User.findOne({ _id: userPayload._id });
+//     if (user && req.file) {
+//       const imagePath = req.file.destination.replace("uploads", "images");
+//       sharp(req.file.path, { pages: -1 })
+//         // .resize(1600, 900, { fit: "inside" })
+//         .webp()
+//         .toFile(`${imagePath}/bg.webp`, async err => {
+//           if (err) {
+//             // logger.error(err, "Error while trying to sharp file");
+//             return res.status(400).json({
+//               message: "Something went wrong D:",
+//             });
+//           }
+//           if (req.file?.path)
+//             fs.unlink(req.file.path, function (err) {
+//               if (err) {
+//                 // logger.error(err, "Error while trying to remove file");
+//               }
+//             });
 
-const saveBadges = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { badges, pagename } = req.body;
-    const { userPayload } = res.locals;
+//           const pageSaved = await Page.findOneAndUpdate(
+//             { userOwner: user, pagename: pagename },
+//             {
+//               backgroundUrl: `${config.apiUrl}${imagePath}/bg.webp?v=${new Date().getTime()}`,
+//             }
+//           );
+//           if (pageSaved) {
+//             return res.status(200).json({
+//               message: "Background successfully saved",
+//             });
+//           }
+//         });
+//     } else {
+//       res.status(400).json({
+//         message: "Something went wrong D:",
+//       });
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-    if (userPayload) {
-      // TODO - validate max 10 badges
-      const pageSaved = await Page.findOneAndUpdate({ userOwner: userPayload._id, pagename: pagename }, { badges });
-      if (pageSaved) {
-        return res.status(201).json({
-          message: "Page successfully saved",
-        });
-      }
-    }
-    return res.status(400).json({
-      message: "Something went wrong D:",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const saveSocialMedia = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { items, pagename } = req.body;
-    const { userPayload } = res.locals;
-
-    if (userPayload) {
-      // TODO - validate max 25 scoails
-      const pageSaved = await Page.findOneAndUpdate(
-        { userOwner: userPayload._id, pagename: pagename },
-        { socialMedias: items }
-      );
-      if (pageSaved) {
-        return res.status(201).json({
-          message: "Page successfully saved",
-        });
-      }
-    }
-    res.status(400).json({
-      message: "Something went wrong D:",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const uploadAvatar = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { pagename } = req.query;
-    const { userPayload } = res.locals;
-    const user = await User.findOne({ _id: userPayload._id });
-    if (user && req.file) {
-      const imagePath = req.file.destination.replace("uploads", "images");
-      sharp(req.file.path, { pages: -1 })
-        .resize(400, 400, { fit: "inside" })
-        .webp()
-        .toFile(`${imagePath}/avatar.webp`, async err => {
-          if (err) {
-            logger.error(err, "Error while trying to sharp file");
-            return res.status(400).json({
-              message: "Something went wrong D:",
-            });
-          }
-          if (req.file?.path)
-            fs.unlink(req.file.path, function (err) {
-              if (err) {
-                logger.error(err, "Error while trying to remove file");
-              }
-            });
-
-          const pageSaved = await Page.findOneAndUpdate(
-            { userOwner: user, pagename: pagename },
-            {
-              pfpUrl: `${config.apiUrl}${imagePath}/avatar.webp?v=${new Date().getTime()}`,
-            }
-          );
-          if (pageSaved) {
-            return res.status(200).json({
-              message: "Avatar successfully saved",
-            });
-          }
-        });
-    } else {
-      res.status(400).json({
-        message: "Something went wrong D:",
-      });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
-const uploadBackground = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { pagename } = req.query;
-    const { userPayload } = res.locals;
-    const user = await User.findOne({ _id: userPayload._id });
-    if (user && req.file) {
-      const imagePath = req.file.destination.replace("uploads", "images");
-      sharp(req.file.path, { pages: -1 })
-        // .resize(1600, 900, { fit: "inside" })
-        .webp()
-        .toFile(`${imagePath}/bg.webp`, async err => {
-          if (err) {
-            logger.error(err, "Error while trying to sharp file");
-            return res.status(400).json({
-              message: "Something went wrong D:",
-            });
-          }
-          if (req.file?.path)
-            fs.unlink(req.file.path, function (err) {
-              if (err) {
-                logger.error(err, "Error while trying to remove file");
-              }
-            });
-
-          const pageSaved = await Page.findOneAndUpdate(
-            { userOwner: user, pagename: pagename },
-            {
-              backgroundUrl: `${config.apiUrl}${imagePath}/bg.webp?v=${new Date().getTime()}`,
-            }
-          );
-          if (pageSaved) {
-            return res.status(200).json({
-              message: "Background successfully saved",
-            });
-          }
-        });
-    } else {
-      res.status(400).json({
-        message: "Something went wrong D:",
-      });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
-const updateColors = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { primaryColor, secondaryColor, fontColor, pagename } = req.body;
-    const { userPayload } = res.locals;
-
-    if (userPayload) {
-      const pageSaved = await Page.findOneAndUpdate(
-        { userOwner: userPayload._id, pagename: pagename },
-        { primaryColor, secondaryColor, fontColor }
-      );
-      if (pageSaved) {
-        return res.status(201).json({
-          message: "Color successfully saved",
-        });
-      }
-    }
-    res.status(400).json({
-      message: "Something went wrong D:",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export default {
-  getPage,
-  getEditPage,
-  createPage,
+export const PageController = {
+  getByPagename,
+  getPageToEdit,
+  create,
   checkPagename,
-  savePageInfo,
-  saveBadges,
-  saveSocialMedia,
-  uploadAvatar,
-  uploadBackground,
-  updateColors,
+  updatePageInfo,
+  updatePageBadges,
+  updatePageSocialMedia,
+  updatePageColors,
+  updatePageAvatar,
+  updatePageBackground,
 };
