@@ -7,7 +7,7 @@ import { validate } from "../utils/validate";
 const confirmEmail = catchAsync(async (req, res) => {
   const { body } = await validate(TokenValidations.confirmEmail, req);
   await UserService.confirmEmail(body.token);
-  res.send({ message: "Email successfully confirmated" });
+  res.send({ confirmated: true, message: "Email successfully confirmated" });
 });
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
