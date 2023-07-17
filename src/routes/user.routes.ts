@@ -11,5 +11,5 @@ UserRoutes.route("/")
 
 UserRoutes.get("/logged", rateLimiterHour(200), authenticate(), UserController.getLogged);
 
-UserRoutes.post("/send_confirm_email", rateLimiterDay(10), UserController.sendConfirmationEmail);
-UserRoutes.post("/send_reset_email", rateLimiterDay(10), UserController.sendResetEmail);
+UserRoutes.post("/send_confirm_email", rateLimiterDay(10), authenticate(), UserController.sendConfirmationEmail);
+UserRoutes.post("/send_reset_email", rateLimiterDay(10), authenticate(), UserController.sendResetEmail);
