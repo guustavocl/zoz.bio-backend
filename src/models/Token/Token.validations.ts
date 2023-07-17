@@ -2,7 +2,7 @@ import { z } from "zod";
 import { MIN_LENGTH_MSG } from "../../utils/constants";
 
 const confirmEmail = z.object({
-  params: z.object({
+  body: z.object({
     token: z
       .string({
         required_error: "Token hash is required",
@@ -12,7 +12,7 @@ const confirmEmail = z.object({
 });
 
 const resetPassword = z.object({
-  params: z.object({
+  body: z.object({
     token: z
       .string({
         required_error: "Token hash is required",
