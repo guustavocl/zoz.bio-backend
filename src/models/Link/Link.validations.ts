@@ -82,7 +82,7 @@ const getOne = z.object({
 const getAll = z.object({
   query: z.object({
     name: z.string().optional(),
-    sortBy: z.string().optional(),
+    sort: z.string().optional(),
     limit: z
       .string()
       .optional()

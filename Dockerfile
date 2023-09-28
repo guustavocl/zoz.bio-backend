@@ -27,7 +27,7 @@ RUN adduser --system --uid 1001 expressjs
 RUN chown -R expressjs:nodejs /app
 USER expressjs
 EXPOSE 3000
-EXPOSE 443
+
 CMD ["yarn", "start"]
 
 # create image with this command: sudo docker build . -t api.zoz.bio-image

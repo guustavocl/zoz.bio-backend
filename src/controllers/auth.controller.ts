@@ -10,7 +10,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const loginIp = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
   const user = await AuthService.login(body.email, body.password, loginIp);
   setCookie(user, res);
-  res.send({ user: user.toJSON() });
+  res.send({ user });
 });
 
 const logout = catchAsync(async (req: Request, res: Response) => {

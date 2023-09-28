@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
-const production = process.env.NODE_MODE === "production";
+const production = process.env.NODE_ENV === "production";
 
 export const config = {
-  env: process.env.NODE_MODE,
+  env: process.env.NODE_ENV,
   production: production,
   port: production ? 3000 : 3100,
   apiUrl: production ? "https://api.zoz.bio/" : "http://127.0.0.1:3100/",
