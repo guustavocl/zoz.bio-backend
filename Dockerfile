@@ -4,6 +4,7 @@ FROM alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json yarn.lock* ./
+RUN npm install --cpu=arm64 --os=linux --libc=musl sharp
 RUN yarn --frozen-lockfile;
 
 # Rebuild the source code only when needed
