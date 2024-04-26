@@ -1,0 +1,18 @@
+version: "3"
+services:
+  api.zoz.bio:
+    container_name: api.zoz.bio
+    build:
+      context: .
+      dockerfile: ./Dockerfile.api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+    network_mode: "host"
+    volumes:
+      -/var/www/api.zoz.bio/images:/app/images 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '1GB'
