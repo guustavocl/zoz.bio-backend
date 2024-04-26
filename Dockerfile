@@ -1,23 +1,33 @@
-FROM node:20-slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-COPY . /app
+FROM node:18-alpine AS alpine
+
+FROM alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+COPY package.json yarn.lock* ./
+RUN npm install --cpu=arm64 --os=linux --libc=musl sharp
+RUN yarn --frozen-lockfile;
 
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+# Rebuild the source code only when needed
+FROM alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN yarn build
 
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run build
+# Production image, copy all the files and run next
+FROM alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
 
-FROM base
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app/.env ./.env
-COPY --from=build /app/build /app/build
-COPY --from=build /app/package.json ./package.json
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/.env ./.env
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-ENV NODE_ENV=production
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 expressjs
+RUN chown -R expressjs:nodejs /app
+USER expressjs
 EXPOSE 3000
-CMD ["pnpm", "run", "start"]
+
+CMD ["yarn", "start"]
