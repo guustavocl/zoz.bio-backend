@@ -10,7 +10,7 @@ services:
       NODE_ENV: production
     network_mode: "host"
     volumes:
-      -/var/www/api.zoz.bio/images:/app/images 
+      - /var/www/api.zoz.bio/images:/app/images 
     deploy:
       resources:
         limits:
