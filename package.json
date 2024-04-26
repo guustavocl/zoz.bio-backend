@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/sharp": "^0.32.0",
     "aws-sdk": "^2.1407.0",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
@@ -33,7 +32,7 @@
     "nodemailer": "^6.8.0",
     "pino": "^8.7.0",
     "pino-pretty": "^9.1.1",
-    "sharp": "^0.33.3",
+    "sharp": "0.32.6",
     "winston": "^3.10.0",
     "zod": "^3.21.4"
   },
@@ -48,6 +47,7 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^18.11.9",
     "@types/nodemailer": "^6.4.6",
+    "@types/sharp": "^0.32.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "eslint": "^8.33.0",
