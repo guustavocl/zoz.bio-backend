@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/sharp": "^0.32.0",
     "aws-sdk": "^2.1407.0",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
@@ -47,7 +48,6 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^18.11.9",
     "@types/nodemailer": "^6.4.6",
-    "@types/sharp": "^0.31.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "eslint": "^8.33.0",
